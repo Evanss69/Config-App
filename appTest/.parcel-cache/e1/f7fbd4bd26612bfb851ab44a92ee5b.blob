@@ -1,0 +1,220 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+class NetworkTableForm {
+  constructor(def, parentEl) {
+    this.def = def; //console.log(this.def);
+
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _util.createElement)('table', {
+      width: '100%'
+    }, parentEl);
+    this.def.forEach((row, r) => {
+      if (r < 2) {
+        const rowEl = (0, _util.createElement)('tr', {}, this.table);
+        this.inputs.push([]); //console.log(this.inputs);
+
+        let td = (0, _util.createElement)('td', {}, rowEl);
+        td.innerHTML = row.type;
+      }
+      /*
+          row.cols.forEach((c, i) => {
+            let td = createElement('td', {}, rowEl);
+            let input = createElement('input', {}, td);
+            input.value = i;
+            input.dataset["input"] = 'value_'+i;
+            this.inputs[r].push(input);
+          })*/
+
+    });
+  }
+
+  getData() {
+    const data = [];
+    this.inputs.forEach(row => {
+      let res = row.reduce((acc, el) => {
+        acc[el.dataset.input] = el.value;
+        return acc;
+      }, {});
+      data.push(res);
+    }); //console.log(data);
+
+    return data;
+  }
+
+  transformBoolean(connected) {
+    if (connected == "100 (connected)") {
+      return true;
+    }
+
+    if (connected == "30 (disconnected)") {
+      return false;
+    }
+
+    return null;
+  }
+
+  disableNetworkBox(dhcpBox) {
+    var i;
+
+    if (dhcpBox.target.id == 0) {
+      var restrict = document.getElementsByName('restrict0');
+    } else if (dhcpBox.target.id == 1) {
+      var restrict = document.getElementsByName('restrict1');
+    }
+
+    if (dhcpBox.target.checked == true) {
+      for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = true;
+      }
+
+      i = 0;
+    } else {
+      for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = false;
+      }
+    }
+  }
+
+}
+/*
+class NetworkForm{
+
+     updateNetworkForm(container,data)
+{
+  var table = createElement('table', {width: '100%'}, container);
+    Object.keys(data).forEach(k=>
+    {
+      if(k<2){
+        
+      NetworkForm.addNetworkLine(table, data[k],k)
+      }
+    });
+
+}
+ transformBoolean(connected)
+{
+  if (connected == "100 (connected)")
+  {
+
+    return true;
+  } 
+  if(connected=="30 (disconnected)")
+  {
+   
+    return false;
+  }
+  return null ;
+}
+ disableNetworkBox(dhcpBox){
+  var i;
+  if (dhcpBox.target.id==0){
+    
+    var restrict=document.getElementsByName('restrict0');
+  }else if(dhcpBox.target.id==1){
+    var restrict=document.getElementsByName('restrict1');
+  }
+  if (dhcpBox.target.checked==true){
+
+    for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled=true;
+      } 
+    i=0;
+ 
+  }
+  else{
+
+   for (i = 0; i < restrict.length; i++) {
+  restrict[i].disabled=false;
+    }
+   
+  }
+}
+ addNetworkLine(container,def,k){
+
+      var row = createElement('tr', {}, container);
+      var connected = createElement('td', {}, row);
+      var isConnected=networkForm.transformBoolean(def.state);
+      if(isConnected ===null ){
+        connected.innerHTML = "?" ;
+      } else if(connected.innerHTML=isConnected ?  "&check;" : "&cross;");
+
+      var typeEl = createElement('td', {padding:'10px'}, row);
+      typeEl.innerHTML = def.type;
+
+      var dhcp=createElement('td',{padding:'10px'},row);
+      dhcp.innerHTML ='DHCP';
+      
+      var dhcpBox=createElement('input',{},dhcp);
+      dhcpBox.id=k;
+      dhcpBox.type='checkbox';
+      dhcpBox.defaultChecked ='true';
+      dhcpBox.addEventListener('change',networkForm.disableNetworkBox);
+      
+      var ipEl = createElement('td',{fontWeight:'bold',},row);
+      ipEl.innerHTML='IP address:';
+     def.ip= (def.ip && def.ip.split('/'))|| '?';
+      var ipBox =createElement('input',{width:'125px'},ipEl);
+      ipBox.placeholder='IP Address';
+      ipBox.defaultValue=def.ip[0];
+      ipBox.name='restrict'+k;
+      ipBox.disabled='true';
+      ipBox.maxLength= 15;
+
+      var maskEl=createElement('td',{fontWeight:'bold',},row);
+      maskEl.innerHTML='Mask:';
+
+      var maskBox=createElement('input',{width:'125px'},maskEl);
+      maskBox.placeholder='EX:/8=255.0.0.0';
+      maskBox.defaultValue='255.255.255.0';
+      maskBox.name='restrict'+k;
+      maskBox.disabled='true';
+      maskBox.maxLength=15;
+
+      var gatewayEl=createElement('td',{fontWeight:'bold'},row);
+      gatewayEl.innerHTML ='Gateway:';
+
+      var gatewayBox=createElement('input',{width:'125px'},gatewayEl);
+      gatewayBox.placeholder='Gateway';
+      gatewayBox.defaultValue=def.gateway;
+      gatewayBox.name='restrict'+k;
+      gatewayBox.disabled='true';
+      gatewayBox.maxLength=15;
+    
+      var dnsEl1=createElement('td',{fontWeight:'bold',},row);
+      dnsEl1.innerHTML='DNS1:';
+
+      var dnsBox1=createElement('input',{width:'125px'},dnsEl1);
+      dnsBox1.placeholder='DNS1';
+      
+      dnsBox1.defaultValue=def.dns1;
+      dnsBox1.name='restrict'+k;
+      dnsBox1.disabled='true'; 
+      dnsBox1.maxLength=15;
+     
+      var dnsEl2=createElement('td',{fontWeight:'bold',},row);
+      dnsEl2.innerHTML='DNS2:';
+
+      var dnsBox2=createElement('input',{width:'125px'},dnsEl2);
+      dnsBox2.placeholder='DNS2';
+      dnsBox2.name='restrict'+k;
+      dnsBox2.disabled='true'; 
+      dnsBox2.maxLength=15;
+}
+    //createBox(parentEl,k){}
+};
+*/
+
+
+var _default = NetworkTableForm;
+exports.default = _default;

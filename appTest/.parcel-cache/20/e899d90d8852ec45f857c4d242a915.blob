@@ -1,0 +1,238 @@
+"use strict";
+
+var _urls = _interopRequireDefault(require("../srcServ/urls"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const NetworkFormUtil = {
+  wifiSelected(evt) {//console.log(evt.target.value);
+  },
+
+  loadParams() {
+    const network_config_params = NetworkFormUtil.getParams(this.inputs); // .call(this);
+
+    if (network_config_params) {
+      this.resultNetForm.update(JSON.stringify(network_config_params));
+      this.sendParams(network_config_params);
+    }
+  },
+
+  transformBooleanNetworkState(state) {
+    if (state == "100 (connected)") {
+      return true;
+    }
+
+    if (state == "30 (disconnected)" || "20 (unavailable)") {
+      return false;
+    }
+
+    return null;
+  },
+
+  activeConnection(activeBox) {
+    const params = [];
+
+    if (activeBox.target.dataset['type'] == 'wifi') {
+      var select = [];
+      Object.values(this.inputs[1]).forEach(param => {
+        if (param.name == 'inputWifiList' || param.type == 'password') {
+          select.push(param.value);
+        } else {}
+      });
+
+      if (!select[0]) {
+        return alert('Choose a Wi-Fi network please');
+      } else {
+        params.push({
+          type: activeBox.target.dataset['type'],
+          activate: activeBox.target.checked,
+          SSID: select[0],
+          password: select[1]
+        });
+      }
+    } else {
+      params.push({
+        type: activeBox.target.dataset['type'],
+        activate: activeBox.target.checked
+      });
+    }
+
+    this.resultNetForm.update(JSON.stringify(params));
+    NetworkFormUtil.sendParams(params);
+    NetworkFormUtil.displayNetworkBox(activeBox.target);
+  },
+
+  displayNetworkBox(activeBox) {
+    var btSub;
+    var tabBtSub = document.getElementsByClassName('Submit_network_params');
+    var tabBtWifiList;
+
+    if (activeBox.name == 'active0') {
+      var restrict = document.getElementsByName('ethernet');
+      btSub = tabBtSub[0];
+    } else if (activeBox.name == 'active1') {
+      var restrict = document.getElementsByName('wifi');
+      btSub = tabBtSub[1];
+      tabBtWifiList = document.getElementsByClassName('btnWifiList');
+    }
+
+    if (activeBox.checked == true) {
+      for (var i = 0; i < restrict.length; i++) {
+        restrict[i].style.display = '';
+        restrict[i].parentElement.style.display = '';
+      }
+
+      if (tabBtWifiList) {
+        for (var i = 0; i < tabBtWifiList.length; i++) {
+          tabBtWifiList[i].disabled = false;
+        }
+      }
+
+      btSub.disabled = false;
+    } else {
+      for (var i = 0; i < restrict.length; i++) {
+        restrict[i].style.display = 'none';
+        restrict[i].parentElement.style.display = 'none';
+      }
+
+      if (tabBtWifiList) {
+        for (var i = 0; i < tabBtWifiList.length; i++) {
+          tabBtWifiList[i].disabled = true;
+        }
+      }
+
+      btSub.disabled = true;
+    }
+  },
+
+  disableNetworkBox(dhcpBox) {
+    var btSub;
+    var tabBtSub = document.getElementsByClassName('Submit_network_params');
+    console.log(tabBtSub);
+
+    if (dhcpBox.target.id == 0) {
+      var restrict = document.getElementsByClassName('inputRestrict0');
+      btSub = tabBtSub[0];
+    } else if (dhcpBox.target.id == 1) {
+      var restrict = document.getElementsByClassName('inputRestrict1');
+      btSub = tabBtSub[1];
+    }
+
+    if (dhcpBox.target.checked == true) {
+      for (var i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = true;
+      }
+
+      btSub.disabled = false;
+    } else {
+      for (var i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = false;
+      }
+    }
+  },
+
+  validInput(evt) {
+    var tabBtSub = document.getElementsByClassName('Submit_network_params');
+    var btSub;
+
+    if (evt.target.className == 'inputRestrict0') {
+      btSub = tabBtSub[0];
+    } else {
+      btSub = tabBtSub[1];
+    }
+
+    if (evt.target.parentElement.textContent == 'Mask') {
+      evt.target.pattern = '^(\/([0-9]|[1-2][0-9]|3[0-2]))?$';
+      evt.target.setCustomValidity('Use CIDR notation');
+    } else {
+      evt.target.pattern = '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+      evt.target.setCustomValidity('Range 0-255, 4 octet , max 32 bits, exemple: 172.16.254.6');
+    }
+
+    if (evt.target.validity.patternMismatch == true) {
+      btSub.setAttribute('disabled', true);
+    } else {
+      evt.target.setCustomValidity('');
+      btSub.disabled = false;
+    }
+  },
+
+  getParams(inputs) {
+    console.log(inputs);
+    const params = [];
+    var select = [];
+
+    if (event.currentTarget.id == 'Submit_network_params0') {
+      Object.values(inputs[0]).forEach(param => {
+        select[0] = param.dataset['type'];
+
+        if (param.type == 'checkbox') {
+          select.push(param.checked);
+        } else {
+          select.push(param.value);
+        }
+      });
+      params.push({
+        type: select[0],
+        DHCP: select[1],
+        IP: select[2],
+        mask: select[3],
+        gateway: select[4],
+        dns1: select[5],
+        dns2: select[6]
+      });
+    } else {
+      Object.values(inputs[1]).forEach(param => {
+        select[0] = param.dataset['type'];
+
+        if (param.type == 'checkbox') {
+          select.push(param.checked);
+        } else {
+          select.push(param.value);
+        }
+      });
+
+      if (select[7]) {
+        params.push({
+          type: select[0],
+          DHCP: select[1],
+          IP: select[2],
+          mask: select[3],
+          gateway: select[4],
+          dns1: select[5],
+          dns2: select[6],
+          SSID: select[7],
+          password: select[8]
+        });
+      } else {
+        return alert('Choose a Wi-Fi network please');
+      }
+    }
+
+    return params;
+  },
+
+  sendParams(params) {
+    var json = JSON.stringify(params);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", _urls.default.update_network_config, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+
+    xhr.onload = function () {
+      var netConfig = xhr.responseText;
+
+      if (xhr.readyState == 4 && xhr.status == "200") {
+        console.table(netConfig);
+        setTimeout(function () {
+          window.location.reload();
+        }, 15000);
+      } else {
+        console.error(netConfig);
+      }
+    };
+
+    xhr.send(json);
+  }
+
+};
+module.exports = NetworkFormUtil;

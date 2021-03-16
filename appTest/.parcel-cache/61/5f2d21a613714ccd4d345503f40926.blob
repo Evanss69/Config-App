@@ -1,0 +1,1937 @@
+// modules are defined as an array
+// [ module function, map of requires ]
+//
+// map of requires is short require name -> numeric require
+//
+// anything defined in a previous bundle is accessed via the
+// orig method which is the require for previous bundles
+
+(function(modules, cache, entry, globalName) {
+  /* eslint-disable no-undef */
+  var globalObject =
+    typeof globalThis !== 'undefined'
+      ? globalThis
+      : typeof self !== 'undefined'
+      ? self
+      : typeof window !== 'undefined'
+      ? window
+      : typeof global !== 'undefined'
+      ? global
+      : {};
+  /* eslint-enable no-undef */
+
+  // Save the require from previous bundle to this closure if any
+  var previousRequire =
+    typeof globalObject.parcelRequire === 'function' &&
+    globalObject.parcelRequire;
+  // Do not use `require` to prevent Webpack from trying to bundle this call
+  var nodeRequire =
+    typeof module !== 'undefined' &&
+    typeof module.require === 'function' &&
+    module.require.bind(module);
+
+  function newRequire(name, jumped) {
+    if (!cache[name]) {
+      if (!modules[name]) {
+        // if we cannot find the module within our internal map or
+        // cache jump to the current global require ie. the last bundle
+        // that was added to the page.
+        var currentRequire =
+          typeof parcelRequire === 'function' && parcelRequire;
+        if (!jumped && currentRequire) {
+          return currentRequire(name, true);
+        }
+
+        // If there are other bundles on this page the require from the
+        // previous one is saved to 'previousRequire'. Repeat this as
+        // many times as there are bundles until the module is found or
+        // we exhaust the require chain.
+        if (previousRequire) {
+          return previousRequire(name, true);
+        }
+
+        // Try the node require function if it exists.
+        if (nodeRequire && typeof name === 'string') {
+          return nodeRequire(name);
+        }
+
+        var err = new Error("Cannot find module '" + name + "'");
+        err.code = 'MODULE_NOT_FOUND';
+        throw err;
+      }
+
+      localRequire.resolve = resolve;
+      localRequire.cache = {};
+
+      var module = (cache[name] = new newRequire.Module(name));
+
+      modules[name][0].call(
+        module.exports,
+        localRequire,
+        module,
+        module.exports,
+        this
+      );
+    }
+
+    return cache[name].exports;
+
+    function localRequire(x) {
+      return newRequire(localRequire.resolve(x));
+    }
+
+    function resolve(x) {
+      return modules[name][1][x] || x;
+    }
+  }
+
+  function Module(moduleName) {
+    this.id = moduleName;
+    this.bundle = newRequire;
+    this.exports = {};
+  }
+
+  newRequire.isParcelRequire = true;
+  newRequire.Module = Module;
+  newRequire.modules = modules;
+  newRequire.cache = cache;
+  newRequire.parent = previousRequire;
+  newRequire.register = function(id, exports) {
+    modules[id] = [
+      function(require, module) {
+        module.exports = exports;
+      },
+      {},
+    ];
+  };
+
+  globalObject.parcelRequire = newRequire;
+
+  for (var i = 0; i < entry.length; i++) {
+    newRequire(entry[i]);
+  }
+
+  if (entry.length) {
+    // Expose entry point to Node, AMD or browser globals
+    // Based on https://github.com/ForbesLindesay/umd/blob/master/template.js
+    var mainExports = newRequire(entry[entry.length - 1]);
+
+    // CommonJS
+    if (typeof exports === 'object' && typeof module !== 'undefined') {
+      module.exports = mainExports;
+
+      // RequireJS
+    } else if (typeof define === 'function' && define.amd) {
+      define(function() {
+        return mainExports;
+      });
+
+      // <script>
+    } else if (globalName) {
+      this[globalName] = mainExports;
+    }
+  }
+})({"9bd8da33dda5445de448aada4b043998":[function(require,module,exports) {
+var global = arguments[3];
+var HMR_HOST = null;
+var HMR_PORT = 1234;
+var HMR_ENV_HASH = "d751713988987e9331980363e24189ce";
+module.bundle.HMR_BUNDLE_ID = "58409adc66f6826c36ae061c016cae01";
+/* global HMR_HOST, HMR_PORT, HMR_ENV_HASH */
+
+var OVERLAY_ID = '__parcel__error__overlay__';
+var OldModule = module.bundle.Module;
+
+function Module(moduleName) {
+  OldModule.call(this, moduleName);
+  this.hot = {
+    data: module.bundle.hotData,
+    _acceptCallbacks: [],
+    _disposeCallbacks: [],
+    accept: function (fn) {
+      this._acceptCallbacks.push(fn || function () {});
+    },
+    dispose: function (fn) {
+      this._disposeCallbacks.push(fn);
+    }
+  };
+  module.bundle.hotData = null;
+}
+
+module.bundle.Module = Module;
+var checkedAssets, assetsToAccept, acceptedAssets; // eslint-disable-next-line no-redeclare
+
+var parent = module.bundle.parent;
+
+if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
+  var hostname = HMR_HOST || (location.protocol.indexOf('http') === 0 ? location.hostname : 'localhost');
+  var port = HMR_PORT || location.port;
+  var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+  var ws = new WebSocket(protocol + '://' + hostname + (port ? ':' + port : '') + '/');
+
+  ws.onmessage = function (event) {
+    checkedAssets = {};
+    assetsToAccept = [];
+    acceptedAssets = {};
+    var data = JSON.parse(event.data);
+
+    if (data.type === 'update') {
+      // Remove error overlay if there is one
+      removeErrorOverlay();
+      let assets = data.assets.filter(asset => asset.envHash === HMR_ENV_HASH); // Handle HMR Update
+
+      var handled = false;
+      assets.forEach(asset => {
+        var didAccept = asset.type === 'css' || hmrAcceptCheck(global.parcelRequire, asset.id);
+
+        if (didAccept) {
+          handled = true;
+        }
+      });
+
+      if (handled) {
+        console.clear();
+        assets.forEach(function (asset) {
+          hmrApply(global.parcelRequire, asset);
+        });
+
+        for (var i = 0; i < assetsToAccept.length; i++) {
+          var id = assetsToAccept[i][1];
+
+          if (!acceptedAssets[id]) {
+            hmrAcceptRun(assetsToAccept[i][0], id);
+          }
+        }
+      } else {
+        window.location.reload();
+      }
+    }
+
+    if (data.type === 'error') {
+      // Log parcel errors to console
+      for (let ansiDiagnostic of data.diagnostics.ansi) {
+        let stack = ansiDiagnostic.codeframe ? ansiDiagnostic.codeframe : ansiDiagnostic.stack;
+        console.error('🚨 [parcel]: ' + ansiDiagnostic.message + '\n' + stack + '\n\n' + ansiDiagnostic.hints.join('\n'));
+      } // Render the fancy html overlay
+
+
+      removeErrorOverlay();
+      var overlay = createErrorOverlay(data.diagnostics.html);
+      document.body.appendChild(overlay);
+    }
+  };
+
+  ws.onerror = function (e) {
+    console.error(e.message);
+  };
+
+  ws.onclose = function (e) {
+    console.warn('[parcel] 🚨 Connection to the HMR server was lost');
+  };
+}
+
+function removeErrorOverlay() {
+  var overlay = document.getElementById(OVERLAY_ID);
+
+  if (overlay) {
+    overlay.remove();
+    console.log('[parcel] ✨ Error resolved');
+  }
+}
+
+function createErrorOverlay(diagnostics) {
+  var overlay = document.createElement('div');
+  overlay.id = OVERLAY_ID;
+  let errorHTML = '<div style="background: black; opacity: 0.85; font-size: 16px; color: white; position: fixed; height: 100%; width: 100%; top: 0px; left: 0px; padding: 30px; font-family: Menlo, Consolas, monospace; z-index: 9999;">';
+
+  for (let diagnostic of diagnostics) {
+    let stack = diagnostic.codeframe ? diagnostic.codeframe : diagnostic.stack;
+    errorHTML += `
+      <div>
+        <div style="font-size: 18px; font-weight: bold; margin-top: 20px;">
+          🚨 ${diagnostic.message}
+        </div>
+        <pre>
+          ${stack}
+        </pre>
+        <div>
+          ${diagnostic.hints.map(hint => '<div>' + hint + '</div>').join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  errorHTML += '</div>';
+  overlay.innerHTML = errorHTML;
+  return overlay;
+}
+
+function getParents(bundle, id) {
+  var modules = bundle.modules;
+
+  if (!modules) {
+    return [];
+  }
+
+  var parents = [];
+  var k, d, dep;
+
+  for (k in modules) {
+    for (d in modules[k][1]) {
+      dep = modules[k][1][d];
+
+      if (dep === id || Array.isArray(dep) && dep[dep.length - 1] === id) {
+        parents.push([bundle, k]);
+      }
+    }
+  }
+
+  if (bundle.parent) {
+    parents = parents.concat(getParents(bundle.parent, id));
+  }
+
+  return parents;
+}
+
+function updateLink(link) {
+  var newLink = link.cloneNode();
+
+  newLink.onload = function () {
+    if (link.parentNode !== null) {
+      link.parentNode.removeChild(link);
+    }
+  };
+
+  newLink.setAttribute('href', link.getAttribute('href').split('?')[0] + '?' + Date.now());
+  link.parentNode.insertBefore(newLink, link.nextSibling);
+}
+
+var cssTimeout = null;
+
+function reloadCSS() {
+  if (cssTimeout) {
+    return;
+  }
+
+  cssTimeout = setTimeout(function () {
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+
+    for (var i = 0; i < links.length; i++) {
+      var absolute = /^https?:\/\//i.test(links[i].getAttribute('href'));
+
+      if (!absolute) {
+        updateLink(links[i]);
+      }
+    }
+
+    cssTimeout = null;
+  }, 50);
+}
+
+function hmrApply(bundle, asset) {
+  var modules = bundle.modules;
+
+  if (!modules) {
+    return;
+  }
+
+  if (modules[asset.id] || !bundle.parent) {
+    if (asset.type === 'css') {
+      reloadCSS();
+    } else {
+      var fn = new Function('require', 'module', 'exports', asset.output);
+      modules[asset.id] = [fn, asset.depsByBundle[bundle.HMR_BUNDLE_ID]];
+    }
+  } else if (bundle.parent) {
+    hmrApply(bundle.parent, asset);
+  }
+}
+
+function hmrAcceptCheck(bundle, id) {
+  var modules = bundle.modules;
+
+  if (!modules) {
+    return;
+  }
+
+  if (!modules[id] && bundle.parent) {
+    return hmrAcceptCheck(bundle.parent, id);
+  }
+
+  if (checkedAssets[id]) {
+    return;
+  }
+
+  checkedAssets[id] = true;
+  var cached = bundle.cache[id];
+  assetsToAccept.push([bundle, id]);
+
+  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
+    return true;
+  }
+
+  return getParents(global.parcelRequire, id).some(function (v) {
+    return hmrAcceptCheck(v[0], v[1]);
+  });
+}
+
+function hmrAcceptRun(bundle, id) {
+  var cached = bundle.cache[id];
+  bundle.hotData = {};
+
+  if (cached && cached.hot) {
+    cached.hot.data = bundle.hotData;
+  }
+
+  if (cached && cached.hot && cached.hot._disposeCallbacks.length) {
+    cached.hot._disposeCallbacks.forEach(function (cb) {
+      cb(bundle.hotData);
+    });
+  }
+
+  delete bundle.cache[id];
+  bundle(id);
+  cached = bundle.cache[id];
+
+  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
+    cached.hot._acceptCallbacks.forEach(function (cb) {
+      var assetsToAlsoAccept = cb(function () {
+        return getParents(global.parcelRequire, id);
+      });
+
+      if (assetsToAlsoAccept && assetsToAccept.length) {
+        assetsToAccept.push.apply(assetsToAccept, assetsToAlsoAccept);
+      }
+    });
+  }
+
+  acceptedAssets[id] = true;
+}
+},{}],"117d340aac48b3532ba7fce0acd67995":[function(require,module,exports) {
+"use strict";
+
+var _util = require("./util");
+
+var _screenForm = _interopRequireDefault(require("./screenForm"));
+
+var _networkForm = _interopRequireDefault(require("./networkForm"));
+
+var _button = _interopRequireDefault(require("./button"));
+
+var _result = _interopRequireDefault(require("./result"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let b = document.body;
+b.style.margin = 0;
+b.style.padding = 0;
+b.style.backgroundColor = 'lightgrey';
+let globalBox = (0, _util.createElement)('div', {
+  width: '100%',
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  border: '5px solid pink'
+}, b);
+let netForm;
+let scrnForm;
+
+window.onload = function () {
+  var networkCl = (0, _util.createColumn)(globalBox, 'Network Configuration');
+  var get_network_config = fetch('http://localhost:80/get_network_config');
+  get_network_config.then(response => response.json()).then(dataDevice => {
+    // networkForm.updateNetworkForm(Network.content,dataDevice);
+    netForm = new _networkForm.default(dataDevice, networkCl.content); //console.log(netForm);
+  });
+  get_network_config.catch(e => {
+    console.error(e);
+  });
+  get_wifiList.catch(e => {
+    console.error(e);
+  });
+  var screenCl = (0, _util.createColumn)(globalBox, 'Screen Resolution Configuration');
+  var get_screen_config = fetch('http://localhost:80/get_screen_config');
+  get_screen_config.then(response => response.json()).then(dataScreen => {
+    //screenForm.updateVideoForm(Screen.content, dataScreen);
+    scrnForm = new _screenForm.default(dataScreen, screenCl.content);
+  });
+  get_screen_config.catch(e => {
+    console.error(e);
+  });
+  const btnHideShowScrn = new _button.default('Hide/Show', screenCl.column);
+  btnHideShowScrn.onClick(() => {
+    screenCl.content.style.visibility = screenCl.content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  }); //a tester 
+  //	const defaultValuesScrn =screenCl.content;
+  //console.log(screenCl.content)
+
+  const btnResetScrn = new _button.default('Reset', screenCl.column);
+  btnResetScrn.onClick(() => {
+    window.location.reload(); //	screenCl.content=defaultValuesScrn;
+  });
+  const btnSubmitScrn = new _button.default('Submit', screenCl.column);
+  const resultScrnForm = new _result.default(screenCl.column);
+  btnSubmitScrn.onClick(() => {
+    const data = scrnForm.getData();
+    resultScrnForm.update(JSON.stringify(data));
+  });
+  const btnHideShowNet = new _button.default('Hide/Show', networkCl.column);
+  btnHideShowNet.onClick(() => {
+    networkCl.content.style.visibility = networkCl.content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  }); //const defaultValuesNet = networkCl.content;
+
+  const btnResetNet = new _button.default('Reset', networkCl.column);
+  btnResetNet.onClick(() => {
+    window.location.reload(); //networkCl.content =defaultValuesNet;
+  });
+  const btnSubmitNet = new _button.default('Submit', networkCl.column);
+  const resultNetform = new _result.default(networkCl.column);
+  btnSubmitNet.onClick(() => {
+    const data = netForm.getData();
+    resultNetform.update(JSON.stringify(data));
+  });
+};
+/*
+import {createElement,createColumn} from './util';
+import screenForm from './screenForm';
+import networkForm from'./networkForm';
+
+
+
+var b =document.body;
+b.style.margin =0;
+b.style.padding =0;
+b.style.backgroundColor ='lightgrey';
+
+var globalBox=createElement('div',{
+  width:'100%',
+  display :'grid',
+  gridTemplateColumns:'1fr 1fr',
+  border :'5px solid pink'
+},b);
+
+
+var Network = createColumn(globalBox, 'Network Configuration');
+var get_network_config = fetch('http://localhost:80/info1');
+get_network_config
+.then(response => response.json())
+		.then((dataDevice) => {
+            networkForm.updateNetworkForm(Network.content,dataDevice);
+
+  })
+  get_network_config.catch((e) => {
+    console.error(e);
+  });
+
+var Screen = createColumn(globalBox, 'Screen Resolution Configuration');
+var get_data_screen = fetch('http://localhost:80/info2');
+get_data_screen
+.then(response => response.json())
+  .then((dataScreen) => {
+    screenForm.updateVideoForm(Screen.content, dataScreen);
+    
+    })
+		get_data_screen.catch((e) => {
+			console.error(e);
+    });
+    */
+},{"./util":"4ba43b1ef261e6617e63062b8de9f094","./screenForm":"35afba1ac881bf5d3cb7c5f7fd785d0d","./networkForm":"9b0e4cc98665be9d10e2f79d677b13a0","./button":"7b3639d18269cc89bc2853fc4a8a9397","./result":"e2d3b075cb0f95ba217881a8dba01c87"}],"4ba43b1ef261e6617e63062b8de9f094":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createElement = createElement;
+exports.createColumn = createColumn;
+
+function createElement(type, style, parentEl) {
+  var el = document.createElement(type);
+
+  for (var attr in style) {
+    el.style[attr] = style[attr];
+  }
+
+  if (parentEl) parentEl.appendChild(el);
+  return el;
+}
+
+function createColumn(parentEl, title) {
+  let cl = createElement('div', {
+    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    border: '1px dotted blue',
+    marginRight: '1em',
+    marginTop: 0
+  }, parentEl);
+  let header = createElement('div', {
+    color: 'black',
+    fontSize: '40px',
+    fontWeight: 'bold',
+    border: '1px solid green'
+  }, cl);
+  header.innerHTML = title;
+  let content = createElement('div', {
+    fontFamily: 'sans-serif'
+  }, cl);
+  return {
+    column: cl,
+    header: header,
+    content: content
+  };
+}
+/*
+function createElInput(type,style,parentEl){
+var el=document.createElement('input');
+el.type=type;
+for (atr in type){
+el.type[atr]=type[atr];
+}
+for(attr in style){
+el.style[attr]=style[attr];
+}
+ if(parentEl) parentEl.appendChild(el);
+return el;
+ }
+*/
+
+/*function CheckSubmit(el,data,style,evt){
+return submit;
+};
+
+function createColumn(parentEl, title){
+  let cl = createElement('div', {
+    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    border: '1px dotted blue',
+    marginRight: '1em',
+    marginTop: 0
+  }, parentEl);
+
+  let header = createElement('div', {
+    color:'black',
+    fontSize:'40px',
+    fontWeight:'bold',
+    border: '1px solid green'
+  }, cl);
+  header.innerHTML = title;
+
+  let content = createElement('div', {
+    fontFamily:'sans-serif'
+  }, cl);
+  
+  createButtonForm(cl,content);
+  
+  return { column: cl, header: header, content: content }; 
+  
+}
+ function createButtonForm(parentEl,content){
+  let btnHideShow = createElement('button', {margin :'10px'}, parentEl);
+
+  btnHideShow.innerHTML = 'Show/Hide';
+
+  btnHideShow.addEventListener('click', function() {
+    content.style.visibility = content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  });
+  
+  let btnReset =createElement('button',{margin:'10px'},parentEl);
+
+  btnReset.innerHTML='Reset';
+
+  btnReset.addEventListener('click',function(){
+    window.location.reload();
+    
+  });
+
+  let btnSubmit = createElement('button',{margin:'10px'},parentEl);
+ // console.log(btnSubmit);
+  btnSubmit.innerHTML ='Submit';
+  
+  btnSubmit.addEventListener('click',function ConfirmSend(){
+    
+   if ( confirm( "Are you sure of your configuration?" ) ) {
+  // Code à éxécuter si le l'utilisateur clique sur "OK"
+  console.log(content.children);
+   // (content )
+ 
+} else {
+  // Code à éxécuter si l'utilisateur clique sur "Annuler" 
+}
+   });
+}
+ function createColumn(parentEl, title){
+  let cl = createElement('div', {
+    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    border: '1px dotted blue',
+    marginRight: '1em',
+    marginTop: 0
+  }, parentEl);
+
+  let header = createElement('div', {
+    color:'black',
+    fontSize:'40px',
+    fontWeight:'bold',
+    border: '1px solid green'
+  }, cl);
+  header.innerHTML = title;
+
+  let content = createElement('div', {
+    fontFamily:'sans-serif'
+  }, cl);
+  
+  createButtonForm(cl,content);
+  
+  return { column: cl, header: header, content: content }; 
+  
+}
+ function createButtonForm(parentEl,content){
+  let btnHideShow = createElement('button', {margin :'10px'}, parentEl);
+
+  btnHideShow.innerHTML = 'Show/Hide';
+
+  btnHideShow.addEventListener('click', function() {
+    content.style.visibility = content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  });
+  
+  let btnReset =createElement('button',{margin:'10px'},parentEl);
+
+  btnReset.innerHTML='Reset';
+
+  btnReset.addEventListener('click',function(){
+    window.location.reload();
+    
+  });
+
+  let btnSubmit = createElement('button',{margin:'10px'},parentEl);
+ // console.log(btnSubmit);
+  btnSubmit.innerHTML ='Submit';
+  
+  btnSubmit.addEventListener('click',function ConfirmSend(){
+    
+   if ( confirm( "Are you sure of your configuration?" ) ) {
+  // Code à éxécuter si le l'utilisateur clique sur "OK"
+  console.log(content.children);
+   // (content )
+ 
+} else {
+  // Code à éxécuter si l'utilisateur clique sur "Annuler" 
+}
+   });
+}
+*/
+},{}],"35afba1ac881bf5d3cb7c5f7fd785d0d":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+class ScreenTableForm {
+  constructor(def, parentEl) {
+    this.def = def;
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _util.createElement)('table', {
+      width: '100%'
+    }, parentEl);
+    console.log(this.def);
+    let rowIndex = 0;
+
+    for (var [name, data] of Object.entries(this.def)) {
+      console.log(`${name} => connected:${data.connected}, modes:${data.modes.length}`);
+      this.createRow(rowIndex, name, data);
+      rowIndex++;
+    }
+  }
+
+  createRow(id, name, data) {
+    const rowEl = (0, _util.createElement)('tr', {}, this.table);
+    this.inputs.push([]);
+    const content = data.connected ? "&check;" : "&cross;";
+    this.createCell(rowEl, this.inputs[id], {
+      content: content,
+      value: data.connected,
+      dataset: {
+        connected: data.connected
+      }
+    });
+    this.createCell(rowEl, this.inputs[id], {
+      dataset: {
+        name: name
+      },
+      content: name,
+      value: name
+    });
+    let modesEl = this.createCell(rowEl, this.inputs[id], {
+      dataset: {
+        mode: data.modes
+      }
+    });
+    this.createSelect(modesEl, name, data.modes, this.inputs[id], this.modesSelected.bind(this));
+  }
+
+  createCell(rowEl, inputs, opts = {}) {
+    let el = (0, _util.createElement)('td', {}, rowEl);
+
+    if (opts.dataset) {
+      Object.entries(opts.dataset).forEach(kv => {
+        el.dataset[kv[0]] = kv[1];
+      });
+    }
+
+    if (opts.content) el.innerHTML = opts.content;
+    if (opts.value) el.value = opts.value; // inputs.push(el);
+
+    return el;
+  }
+
+  createSelect(parentEl, name, values, inputs, onChange) {
+    let modesSelect = (0, _util.createElement)('select', {}, parentEl);
+    inputs.push(modesSelect);
+    modesSelect.dataset['name'] = name;
+
+    if (values.length == 0) {
+      modesSelect.disabled = true;
+      return;
+    }
+
+    modesSelect.addEventListener('change', onChange);
+    values.forEach(mode => {
+      let opt = (0, _util.createElement)('option', {}, modesSelect);
+      opt.text = `${mode.width}x${mode.height}@${mode.rate}`;
+    });
+    return modesSelect;
+  }
+
+  modesSelected(evt) {
+    console.log(evt.target.value);
+    console.log(this.getData());
+  }
+
+  getData() {
+    const data = [];
+    this.inputs.forEach(row => {
+      const select = row[0];
+      data.push({
+        name: select.dataset['name'],
+        value: select.value
+      });
+      /*
+         let res = row.reduce((acc, el) => {
+                acc[el.dataset.connected] = el.value;
+                acc[el.dataset.name]=el.value;
+                acc[el.dataset.modes]=el.value;
+                return acc;
+        }, {});
+        data.push(res);
+        */
+    });
+    return data;
+  }
+
+}
+
+var _default = ScreenTableForm;
+/*import {createElement} from './util';
+const screenForm ={
+     updateVideoForm(container, data) {
+    var table = createElement('table', {width: '100%'}, container);
+    Object.keys(data).forEach(k=>{
+      //console.log(k);
+      screenForm.addVideoLine(table, k, data[k])
+    });
+  },
+   addVideoLine(container, name, def) {
+    //console.log(name);
+    var row = createElement('tr', {}, container);
+    row.className=name; 
+    var connected = createElement('td', {}, row);
+    connected.innerHTML = def.connected ? "&check;" : "&cross;";
+    connected.className=row.className;
+    var nameEl = createElement('td', {}, row);
+    nameEl.innerHTML = name;
+    nameEl.className=name;
+    var modes = createElement('td', {}, row);
+    modes.className=row.className;
+    var modesSelect = createElement('select', {}, modes);
+    modesSelect.className=row.className;
+    if(def.modes.length == 0) {
+      modesSelect.disabled = true;
+    } 
+    else {
+      def.modes.forEach((mode) => {
+        
+        var opt = createElement('option', {}, modesSelect);
+        opt.text = `${mode.width}x${mode.height}@${mode.rate}`;
+      });
+      modesSelect.addEventListener('change', screenForm.modeSelected);
+    }
+    
+  },
+
+   modeSelected(evt) {
+   //console.log(evt.target.parentElement.parentElement);
+   var myModeChoice=document.getElementsByClassName(evt.target.class);
+    console.log(myModeChoice);
+      return myModeChoice;
+  }
+};
+export default screenForm;
+/*class ScreenForm{
+createTableV2:	createTable(parentEl) {
+		this.table = createElement('table', {width:'100%'}, parentEl);
+		console.log(this.def);
+			Object.keys(this.def).forEach((obj,o) => {
+				
+				var data = this.def[obj];
+			
+			const rowEl = createElement('tr', {}, this.table);
+			this.inputs.push([]);
+    
+      let connected = createElement('td', {}, rowEl);
+      connected.innerHTML = data.connected ? "&check;" : "&cross;";
+      connected.value =data.connected;
+      connected.dataset["connected"]='connected:';
+      this.inputs[o].push(connected);
+      
+			let nameEl = createElement('td', {}, rowEl);
+      nameEl.innerHTML = obj;
+      nameEl.value =obj;
+      nameEl.dataset["name"]='name:';
+			this.inputs[o].push(nameEl);
+				
+        let modes = createElement('td', {}, rowEl);
+        modes.dataset["modes"]='mode:';
+				this.inputs[o].push(modes);
+				let modesSelect = createElement('select', {}, modes);
+				modesSelect.addEventListener('change',ScreenTableForm.modesSelected);
+				if(data.modes.length == 0) {
+					modesSelect.disabled = true;
+				  } else{
+						data.modes.forEach((mode)=>{				  
+							let opt = createElement('option', {}, modesSelect);
+							opt.text = `${mode.width}x${mode.height}@${mode.rate}`;
+							
+						  })
+					}
+										
+		});
+	}
+      constructor(data){
+              //const screenForm;
+
+      }
+     updateVideoForm(container, data) {
+    var table = createElement('table', {width: '100%'}, container);
+    Object.keys(data).forEach(k=>{
+      //console.log(k);
+      screenForm.addVideoLine(table, k, data[k])
+    });
+  }
+   addVideoLine(container, name, def) {
+    //console.log(name);
+    var row = createElement('tr', {}, container);
+    row.className=name; 
+    var connected = createElement('td', {}, row);
+    connected.innerHTML = def.connected ? "&check;" : "&cross;";
+    connected.className=row.className;
+    var nameEl = createElement('td', {}, row);
+    nameEl.innerHTML = name;
+    nameEl.className=name;
+    var modes = createElement('td', {}, row);
+    modes.className=row.className;
+    var modesSelect = createElement('select', {}, modes);
+    modesSelect.className=row.className;
+    if(def.modes.length == 0) {
+      modesSelect.disabled = true;
+    } 
+    else {
+      def.modes.forEach((mode) => {
+        
+        var opt = createElement('option', {}, modesSelect);
+        opt.text = `${mode.width}x${mode.height}@${mode.rate}`;
+      });
+      modesSelect.addEventListener('change', screenForm.modeSelected);
+    }
+    
+  }
+
+   modeSelected(evt) {
+   //console.log(evt.target.parentElement.parentElement);
+   var myModeChoice=document.getElementsByClassName(evt.target.classList);
+    console.log(myModeChoice);
+      return myModeChoice;
+  }
+};*/
+
+exports.default = _default;
+},{"./util":"4ba43b1ef261e6617e63062b8de9f094"}],"9b0e4cc98665be9d10e2f79d677b13a0":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+var _networkFormUtil = _interopRequireDefault(require("./networkFormUtil"));
+
+var _button = _interopRequireDefault(require("./button"));
+
+var _result = _interopRequireDefault(require("./result"));
+
+var _wifiListUtil = require("./wifiListUtil");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class NetworkTableFormUI {
+  constructor(def, parentEl) {
+    this.def = def;
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _util.createElement)('table', {
+      width: '100%',
+      paddingTop: '20px'
+    }, parentEl);
+    let rowIndex = 0;
+    this.def.forEach((dataConfigNetwork, r) => {
+      //r<2 because loopback unmanaged and device wifi 2 not used
+      if (r < 2) {
+        var connectionType = dataConfigNetwork.type;
+        this.createRow(rowIndex, connectionType, dataConfigNetwork);
+        rowIndex++;
+      }
+    });
+  }
+
+  createRow(id, connectionType, dataConfigNetwork) {
+    const rowEl = (0, _util.createElement)('tr', {
+      marginBottom: '20px'
+    }, this.table);
+    this.inputs.push([]);
+    var content;
+
+    var isConnected = _networkFormUtil.default.transformBooleanNetworkState(dataConfigNetwork.state);
+
+    if (isConnected === null) {
+      content = "?";
+    } else if (content = isConnected ? "&check;" : "&cross;") ;
+
+    dataConfigNetwork.ip = dataConfigNetwork.ip && dataConfigNetwork.ip.split('/') || '';
+    if (dataConfigNetwork.ip != '') dataConfigNetwork.ip[1] = '/' + dataConfigNetwork.ip[1];
+    const info = [{
+      cols: [{
+        type: 'td',
+        content: "IP address",
+        value: dataConfigNetwork.ip[0],
+        dataset: {
+          ip: dataConfigNetwork.ip[0]
+        }
+      }, {
+        type: 'td',
+        content: "Mask",
+        value: dataConfigNetwork.ip[1],
+        dataset: {
+          mask: dataConfigNetwork.ip[1]
+        }
+      }, {
+        type: 'td',
+        content: "Gateway",
+        value: dataConfigNetwork.gateway,
+        dataset: {
+          gateway: dataConfigNetwork.gateway
+        }
+      }, {
+        type: 'td',
+        content: "DNS1",
+        value: dataConfigNetwork.dns1,
+        dataset: {
+          dns1: dataConfigNetwork.dns1
+        }
+      }, {
+        type: 'td',
+        content: "DNS2",
+        value: dataConfigNetwork.dns2,
+        dataset: {
+          dns2: dataConfigNetwork.dns2
+        }
+      }]
+    }];
+    this.createCell(rowEl, this.inputs[id], {
+      content: content,
+      value: dataConfigNetwork.state
+    });
+    this.createCell(rowEl, this.inputs[id], {
+      dataset: {
+        type: connectionType
+      },
+      content: connectionType,
+      value: connectionType
+    }); //let activateEl = this.createCell(rowEl, this.inputs[id], { content: 'Activate' });
+
+    let dhcpEl = this.createCell(rowEl, this.inputs[id], {
+      content: 'DHCP'
+    });
+    this.createDhcpCheckbox(dhcpEl, connectionType, this.inputs[id], id);
+    info[0].cols.forEach(td => {
+      var dataName = Object.entries(td.dataset)[0][0];
+      var dataValue = Object.entries(td.dataset)[0][1];
+      let el = this.createCell(rowEl, this.inputs[id], {
+        content: td.content,
+        style: {
+          fontWeight: 'bold'
+        }
+      });
+      this.createNetworkParamInput(el, connectionType, this.inputs[id], id, {
+        value: td.value,
+        dataset: {
+          restrict: 'inputRestrict' + id,
+          dataName: dataName,
+          dataValue: dataValue
+        }
+      });
+    });
+
+    if (rowEl.children[1].value == 'wifi') {
+      const rowElWifi = (0, _util.createElement)('tr', {}, this.table);
+      const displayCell = this.createCell(rowElWifi, this.inputs[id]);
+      /* let wifiListEl = this.createCell(rowElWifi, this.inputs[id], { content: 'SSID', hidden: true, className: 'WifiList', style: { fontWeight: 'bold',  } });//paddingRight: '50%'
+       this.createWifiList(wifiListEl, connectionType,dataConfigNetwork.name ,wifiList, this.inputs[id], NetworkFormUtil.wifiSelected.bind(this));
+      
+        let wifiPasswordEl = this.createCell(rowElWifi, this.inputs[id], { content: 'Password', hidden: true, className: 'WifiList', style: { fontWeight: 'bold', } });//paddingRight: '50%'
+       createPassword(wifiPasswordEl, connectionType, this.inputs[id]);
+        let showPasswordEl = this.createCell(rowElWifi, this.inputs[id], {content:'Show password',hidden:true,className:'WifiList',style:{fontWeight:'normal' }});
+       let showPasswordBox = createElement('input', {}, showPasswordEl);
+       showPasswordBox.type = 'checkbox';
+       showPasswordBox.addEventListener('click', () => {
+         var x = document.getElementById("myPasswordBox");
+         if (x.type === "password") {
+           x.type = "text";
+         } else {
+           x.type = "password";
+         }
+       });*/
+    }
+
+    let underRow = (0, _util.createElement)('tr', {}, this.table);
+    const displayCell = this.createCell(underRow, this.inputs[id]);
+    let btSubEl = this.createCell(underRow, this.inputs[id]);
+    let btnSubmitNet = new _button.default('Submit', btSubEl, {}, 'Submit_network_params', id);
+    btnSubmitNet.onClick(_networkFormUtil.default.loadParams.bind(this)); //this.createActiveBox(activateEl, connectionType, this.inputs[id], id, { state: dataConfigNetwork.state });
+  }
+
+  createCell(rowEl, inputs, opts = {}) {
+    let el = (0, _util.createElement)('td', {}, rowEl); // el.style.paddingTop='10px';
+
+    if (opts.dataset) {
+      Object.entries(opts.dataset).forEach(kv => {
+        el.dataset[kv[0]] = kv[1];
+      });
+    }
+
+    if (opts.content) el.innerHTML = opts.content;
+    if (opts.value) el.value = opts.value;
+    if (opts.hidden) el.hidden = opts.hidden;
+    if (opts.className) el.className = opts.className;
+    if (opts.name) el.name = opts.name;
+
+    if (opts.style) {
+      Object.entries(opts.style).forEach(kv => {
+        el.style[kv[0]] = kv[1];
+      });
+    }
+
+    return el;
+  }
+
+  createWifiList(parentEl, type, name, list, inputs, onChange) {
+    let inputWifiList = (0, _util.createElement)('input', {
+      width: '125px'
+    }, parentEl);
+    inputWifiList.name = 'inputWifiList';
+    inputWifiList.setAttribute('list', 'wifiList');
+    inputWifiList.value = name;
+    let wifiList = (0, _util.createElement)('datalist', {}, parentEl);
+    wifiList.id = 'wifiList';
+    wifiList.dataset['type'] = type;
+    wifiList.addEventListener('change', onChange);
+    /* list.forEach((value) => {
+       let opt = createElement('option', {}, wifiList);
+       opt.text = value;
+       opt.value = value;
+     });
+     let hiddenWifi = createElement('option', {}, wifiList);
+     hiddenWifi.text = 'name your hidden wifi';
+     inputs.push(inputWifiList);*/
+
+    return wifiList;
+  }
+
+  createNetworkParamInput(parentEl, type, inputs, id, opts = {}) {
+    let el = (0, _util.createElement)('input', {
+      width: '125px'
+    }, parentEl);
+    inputs.push(el);
+    el.dataset['type'] = type;
+    el.disabled = 'true';
+    el.maxLength = 15;
+    el.placeholder = '*.*.*.*';
+
+    if (id == 0) {
+      el.name = 'ethernet';
+    } else {
+      el.name = 'wifi';
+    }
+
+    ;
+    if (opts.value) el.defaultValue = opts.value;
+    if (opts.dataset.restrict) el.className = opts.dataset.restrict;
+    if (opts.dataset.dataName && opts.dataset.dataValue) el.dataset[opts.dataset.dataName] = opts.dataset.dataValue;
+    el.addEventListener('change', _networkFormUtil.default.validInput);
+  }
+
+  createDhcpCheckbox(parentEl, type, inputs, id, opts = {}) {
+    let dhcpBox = (0, _util.createElement)('input', {}, parentEl);
+    inputs.push(dhcpBox);
+    dhcpBox.dataset['type'] = type;
+    dhcpBox.type = 'checkbox';
+    dhcpBox.defaultChecked = true;
+    dhcpBox.id = id;
+
+    if (id == 0) {
+      dhcpBox.name = 'ethernet';
+    } else {
+      dhcpBox.name = 'wifi';
+    }
+
+    ; // dhcpBox.addEventListener('change', NetworkFormUtil.disableNetworkBox);
+  }
+  /*createActiveBox(parentEl, type, inputs, id, opts = {}) {
+     let activeBox = createElement('input', {}, parentEl);
+    activeBox.dataset['type'] = type;
+    activeBox.type = 'checkbox';
+    activeBox.name = 'active' + id;
+    if (id == 1) {
+      if ((opts.state == '100 (connected)') || (opts.state == '30 (disconnected)')) {
+        activeBox.checked = true; activeBox.defaultChecked = true; NetworkFormUtil.displayNetworkBox(activeBox)
+      } else {
+        activeBox.checked = false; activeBox.defaultChecked = false; NetworkFormUtil.displayNetworkBox(activeBox);
+      }
+    } else {
+      if (opts.state == '100 (connected)') {
+        activeBox.checked = true; activeBox.defaultChecked = true; NetworkFormUtil.displayNetworkBox(activeBox)
+      } else {
+        activeBox.checked = false; activeBox.defaultChecked = false; NetworkFormUtil.displayNetworkBox(activeBox);
+      }
+    }
+    activeBox.addEventListener('change', NetworkFormUtil.activeConnection);
+    if (type == 'wifi') activeBox.addEventListener('click', showWifiList);
+   }*/
+
+
+  getParams() {
+    return _networkFormUtil.default.getParams(this.inputs);
+  }
+
+  sendParams(params) {
+    _networkFormUtil.default.sendParams(params);
+  }
+
+}
+
+var _default = NetworkTableFormUI;
+/*
+import {createElement,createColumn} from './util';
+import screenForm from './screenForm';
+import networkForm from'./networkForm';
+
+
+
+var b =document.body;
+b.style.margin =0;
+b.style.padding =0;
+b.style.backgroundColor ='lightgrey';
+
+var globalBox=createElement('div',{
+  width:'100%',
+  display :'grid',
+  gridTemplateColumns:'1fr 1fr',
+  border :'5px solid pink'
+},b);
+
+
+var Network = createColumn(globalBox, 'Network Configuration');
+var get_data_device = fetch('http://localhost:80/info1');
+get_data_device
+.then(response => response.json())
+		.then((dataDevice) => {
+            networkForm.updateNetworkForm(Network.content,dataDevice);
+
+  })
+  get_data_device.catch((e) => {
+    console.error(e);
+  });
+
+var Screen = createColumn(globalBox, 'Screen Resolution Configuration');
+var get_data_screen = fetch('http://localhost:80/info2');
+get_data_screen
+.then(response => response.json())
+  .then((dataScreen) => {
+    screenForm.updateVideoForm(Screen.content, dataScreen);
+    
+    })
+		get_data_screen.catch((e) => {
+			console.error(e);
+    });
+    */
+
+/*
+PS: ne pas oublier la fct validSubmit qui verifie la saisie de chaque input:
+si chaque input et bien rempli niveau pattern longueur maximal 
+afin 
+d'alerte l'utilisateur de ce qu'il ne va pas et 
+de desactiver le btnSubmit lorsque les champs sont mal remplis.
+*/
+
+/*class NetworkTableForm{
+	
+  constructor(def,parentEl){
+  this.def=def;
+  //console.log(this.def);
+  this.inputs = [];
+  this.createTable(parentEl);
+}
+createTable(parentEl) {
+  this.table = createElement('table', {width:'100%'}, parentEl);
+
+  this.def.forEach((row, r) => {
+    if (r<2){
+      const rowEl = createElement('tr', {}, this.table);
+    this.inputs.push([]);
+    //console.log(this.inputs);
+    let td = createElement('td', {}, rowEl);
+    td.innerHTML = row.type;
+    }
+  });
+
+}
+
+getData(){
+  const data = [];
+             this.inputs.forEach((row) => {
+                      let res = row.reduce((acc, el) => {
+                              acc[el.dataset.input] = el.value;
+                              return acc;
+                      }, {});
+                      data.push(res);
+              });
+              //console.log(data);
+              return data;
+              }
+transformBoolean(connected){
+    if (connected == "100 (connected)"){
+       return true;
+    } 
+    if(connected=="30 (disconnected)"){
+      return false;
+    }
+  return null ;
+}
+
+ disableNetworkBox(dhcpBox){
+    var i;
+    if (dhcpBox.target.id==0){
+        var restrict=document.getElementsByName('restrict0');
+    }else if(dhcpBox.target.id==1){
+        var restrict=document.getElementsByName('restrict1');
+    }
+    if (dhcpBox.target.checked==true){
+    for (i = 0; i < restrict.length; i++) {
+            restrict[i].disabled=true;
+          } 
+      i=0;
+
+    }
+    else{
+    for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled=false;
+        }
+ 
+    }
+}
+
+}
+
+class NetworkForm{
+  constructor(def,parentEl){
+    this.def=def;
+    //console.log(this.def);
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+  createTable(parentEl) {
+    this.table = createElement('table', {width:'100%'}, parentEl);
+  
+    this.def.forEach((row, r) => {
+      if (r<2){
+        const rowEl = createElement('tr', {}, this.table);
+      this.inputs.push([]);
+      //console.log(this.inputs);
+      let td = createElement('td', {}, rowEl);
+      td.innerHTML = row.type;
+      }
+    });
+  
+  }
+  
+  getData(){
+    const data = [];
+               this.inputs.forEach((row) => {
+                        let res = row.reduce((acc, el) => {
+                                acc[el.dataset.input] = el.value;
+                                return acc;
+                        }, {});
+                        data.push(res);
+                });
+                //console.log(data);
+                return data;
+                }
+  transformBoolean(connected){
+      if (connected == "100 (connected)"){
+         return true;
+      } 
+      if(connected=="30 (disconnected)"){
+        return false;
+      }
+    return null ;
+  }
+  
+   disableNetworkBox(dhcpBox){
+      var i;
+      if (dhcpBox.target.id==0){
+          var restrict=document.getElementsByName('restrict0');
+      }else if(dhcpBox.target.id==1){
+          var restrict=document.getElementsByName('restrict1');
+      }
+      if (dhcpBox.target.checked==true){
+      for (i = 0; i < restrict.length; i++) {
+              restrict[i].disabled=true;
+            } 
+        i=0;
+  
+      }
+      else{
+      for (i = 0; i < restrict.length; i++) {
+          restrict[i].disabled=false;
+          }
+   
+      }
+  }
+  
+
+     updateNetworkForm(container,data)
+{
+  var table = createElement('table', {width: '100%'}, container);
+    Object.keys(data).forEach(k=>
+    {
+      if(k<2){
+        
+      NetworkForm.addNetworkLine(table, data[k],k)
+      }
+    });
+
+}
+ transformBoolean(connected)
+{
+  if (connected == "100 (connected)")
+  {
+
+    return true;
+  } 
+  if(connected=="30 (disconnected)")
+  {
+   
+    return false;
+  }
+  return null ;
+}
+ disableNetworkBox(dhcpBox){
+  var i;
+  if (dhcpBox.target.id==0){
+    
+    var restrict=document.getElementsByName('restrict0');
+  }else if(dhcpBox.target.id==1){
+    var restrict=document.getElementsByName('restrict1');
+  }
+  if (dhcpBox.target.checked==true){
+
+    for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled=true;
+      } 
+    i=0;
+ 
+  }
+  else{
+
+   for (i = 0; i < restrict.length; i++) {
+  restrict[i].disabled=false;
+    }
+   
+  }
+}
+ addNetworkLine(container,def,k){
+
+      var row = createElement('tr', {}, container);
+      var connected = createElement('td', {}, row);
+      var isConnected=networkForm.transformBoolean(def.state);
+      if(isConnected ===null ){
+        connected.innerHTML = "?" ;
+      } else if(connected.innerHTML=isConnected ?  "&check;" : "&cross;");
+
+      var typeEl = createElement('td', {padding:'10px'}, row);
+      typeEl.innerHTML = def.type;
+
+      var dhcp=createElement('td',{padding:'10px'},row);
+      dhcp.innerHTML ='DHCP';
+      
+      var dhcpBox=createElement('input',{},dhcp);
+      dhcpBox.id=k;
+      dhcpBox.type='checkbox';
+      dhcpBox.defaultChecked ='true';
+      dhcpBox.addEventListener('change',networkForm.disableNetworkBox);
+      
+      var ipEl = createElement('td',{fontWeight:'bold',},row);
+      ipEl.innerHTML='IP address:';
+     def.ip= (def.ip && def.ip.split('/'))|| '?';
+      var ipBox =createElement('input',{width:'125px'},ipEl);
+      ipBox.placeholder='IP Address';
+      ipBox.defaultValue=def.ip[0];
+      ipBox.name='restrict'+k;
+      ipBox.disabled='true';
+      ipBox.maxLength= 15;
+
+      var maskEl=createElement('td',{fontWeight:'bold',},row);
+      maskEl.innerHTML='Mask:';
+
+      var maskBox=createElement('input',{width:'125px'},maskEl);
+      maskBox.placeholder='EX:/8=255.0.0.0';
+      maskBox.defaultValue='255.255.255.0';
+      maskBox.name='restrict'+k;
+      maskBox.disabled='true';
+      maskBox.maxLength=15;
+
+      var gatewayEl=createElement('td',{fontWeight:'bold'},row);
+      gatewayEl.innerHTML ='Gateway:';
+
+      var gatewayBox=createElement('input',{width:'125px'},gatewayEl);
+      gatewayBox.placeholder='Gateway';
+      gatewayBox.defaultValue=def.gateway;
+      gatewayBox.name='restrict'+k;
+      gatewayBox.disabled='true';
+      gatewayBox.maxLength=15;
+    
+      var dnsEl1=createElement('td',{fontWeight:'bold',},row);
+      dnsEl1.innerHTML='DNS1:';
+
+      var dnsBox1=createElement('input',{width:'125px'},dnsEl1);
+      dnsBox1.placeholder='DNS1';
+      
+      dnsBox1.defaultValue=def.dns1;
+      dnsBox1.name='restrict'+k;
+      dnsBox1.disabled='true'; 
+      dnsBox1.maxLength=15;
+     
+      var dnsEl2=createElement('td',{fontWeight:'bold',},row);
+      dnsEl2.innerHTML='DNS2:';
+
+      var dnsBox2=createElement('input',{width:'125px'},dnsEl2);
+      dnsBox2.placeholder='DNS2';
+      dnsBox2.name='restrict'+k;
+      dnsBox2.disabled='true'; 
+      dnsBox2.maxLength=15;
+}
+    //createBox(parentEl,k){}
+};
+
+export default NetworkForm;*/
+
+exports.default = _default;
+},{"./util":"4ba43b1ef261e6617e63062b8de9f094","./networkFormUtil":"b91fcfdd711bbc3d68a3bf9d9447c142","./button":"7b3639d18269cc89bc2853fc4a8a9397","./result":"e2d3b075cb0f95ba217881a8dba01c87","./wifiListUtil":"ba92ee23cfee3b33a6a843caf405d7a1"}],"b91fcfdd711bbc3d68a3bf9d9447c142":[function(require,module,exports) {
+"use strict";
+
+var _urls = _interopRequireDefault(require("../Serv/urls"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const NetworkFormUtil = {
+  wifiSelected(evt) {//console.log(evt.target.value);
+  },
+
+  loadParams() {
+    const network_config_params = NetworkFormUtil.getParams(); // .call(this);
+
+    if (network_config_params) {
+      this.resultNetForm.update(JSON.stringify(network_config_params));
+      this.sendParams(network_config_params);
+    }
+  },
+
+  transformBooleanNetworkState(state) {
+    if (state == "100 (connected)") {
+      return true;
+    }
+
+    if (state == "30 (disconnected)" || "20 (unavailable)") {
+      return false;
+    }
+
+    return null;
+  },
+
+  /*activeConnection(activeBox) {
+      const params = [];
+      params.push({
+          type: activeBox.target.dataset['type'], activate: activeBox.target.checked
+      });
+      NetworkFormUtil.sendParams(params);
+      NetworkFormUtil.displayNetworkBox(activeBox.target);
+   },
+  displayNetworkBox(activeBox) {
+      var btSub;
+      var tabBtSub = document.getElementsByClassName('Submit_network_params');
+      var tabBtWifiList;
+      if (activeBox.name == 'active0') {
+          var restrict = document.getElementsByName('ethernet');
+          btSub = tabBtSub[0];
+      } else if (activeBox.name == 'active1') {
+          var restrict = document.getElementsByName('wifi');
+          btSub = tabBtSub[1];
+          tabBtWifiList = document.getElementsByClassName('btnWifiList');
+       }
+      if (activeBox.checked == true) {
+          for (var i = 0; i < restrict.length; i++) {
+              restrict[i].style.display = '';
+              restrict[i].parentElement.style.display = '';
+          }
+          if (tabBtWifiList) { for (var i = 0; i < tabBtWifiList.length; i++) { tabBtWifiList[i].disabled = false; } }
+          btSub.disabled = false;
+       }
+      else {
+          for (var i = 0; i < restrict.length; i++) {
+              restrict[i].style.display = 'none';
+              restrict[i].parentElement.style.display = 'none';
+          }
+          if (tabBtWifiList) { for (var i = 0; i < tabBtWifiList.length; i++) { tabBtWifiList[i].disabled = true; } }
+          btSub.disabled = true;
+      }
+  },*/
+  disableNetworkBox(dhcpBox) {
+    var btSub;
+    var tabBtSub = document.getElementsByClassName('Submit_network_params');
+
+    if (dhcpBox.target.id == 0) {
+      var restrict = document.getElementsByClassName('inputRestrict0');
+      btSub = tabBtSub[0];
+    } else if (dhcpBox.target.id == 1) {
+      var restrict = document.getElementsByClassName('inputRestrict1');
+      btSub = tabBtSub[1];
+    }
+
+    if (dhcpBox.target.checked == true) {
+      for (var i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = true;
+      }
+
+      btSub.disabled = false;
+    } else {
+      for (var i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = false;
+      }
+    }
+  },
+
+  validInput(evt) {
+    var tabBtSub = document.getElementsByClassName('Submit_network_params');
+    var btSub;
+
+    if (evt.target.className == 'inputRestrict0') {
+      btSub = tabBtSub[0];
+    } else {
+      btSub = tabBtSub[1];
+    }
+
+    if (evt.target.parentElement.textContent == 'Mask') {
+      evt.target.pattern = '^(\/([0-9]|[1-2][0-9]|3[0-2]))?$';
+      evt.target.setCustomValidity('Use CIDR notation');
+    } else {
+      evt.target.pattern = '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+      evt.target.setCustomValidity('Range 0-255, 4 octet , max 32 bits, exemple: 172.16.254.6');
+    }
+
+    if (evt.target.validity.patternMismatch == true) {
+      btSub.setAttribute('disabled', true);
+    } else {
+      evt.target.setCustomValidity('');
+      btSub.disabled = false;
+    }
+  },
+
+  getParams(inputs) {
+    const params = [];
+    var select = [];
+
+    if (event.currentTarget.id == 'Submit_network_params0') {
+      Object.values(inputs[0]).forEach(param => {
+        select[0] = param.dataset['type'];
+
+        if (param.type == 'checkbox') {
+          select.push(param.checked);
+        } else {
+          select.push(param.value);
+        }
+      });
+      params.push({
+        type: select[0],
+        DHCP: select[1],
+        IP: select[2],
+        mask: select[3],
+        gateway: select[4],
+        dns1: select[5],
+        dns2: select[6]
+      });
+    } else {
+      Object.values(inputs[1]).forEach(param => {
+        select[0] = param.dataset['type'];
+
+        if (param.type == 'checkbox') {
+          select.push(param.checked);
+        } else {
+          select.push(param.value);
+        }
+      });
+
+      if (select[7]) {
+        params.push({
+          type: select[0],
+          DHCP: select[1],
+          IP: select[2],
+          mask: select[3],
+          gateway: select[4],
+          dns1: select[5],
+          dns2: select[6],
+          SSID: select[7],
+          password: select[8]
+        });
+      } else {
+        return alert('Choose a Wi-Fi network please');
+      }
+    }
+
+    return params;
+  },
+
+  sendParams(params) {
+    var json = JSON.stringify(params);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", _urls.default.update_network_config, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+
+    xhr.onload = function () {
+      var netConfig = xhr.responseText;
+
+      if (xhr.readyState == 4 && xhr.status == "200") {
+        console.table(netConfig);
+        window.location.reload();
+      } else {
+        console.error(netConfig);
+      }
+    };
+
+    xhr.send(json);
+  }
+
+};
+module.exports = NetworkFormUtil;
+},{"../Serv/urls":"64f0db400ff05b1e1d36729c707d840b"}],"64f0db400ff05b1e1d36729c707d840b":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+const URLS = {
+  base_url: "http://localhost:80",
+
+  init() {
+    URLS.get_network_config = `${URLS.base_url}/get_network_config`;
+  },
+
+  get_network_config: "http://localhost:80/get_network_config",
+  update_network_config: "http://localhost:80/update_network_config",
+  get_wifiList_ssids: "http://localhost:80/get_wifiList_ssids",
+  get_screen_config: "http://localhost:80/get_screen_config",
+  update_screen_config: "http://localhost:80/update_screen_config"
+};
+var _default = URLS;
+exports.default = _default;
+},{}],"7b3639d18269cc89bc2853fc4a8a9397":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+class Button {
+  constructor(title, parentEl) {
+    const button = (0, _util.createElement)('button', {
+      margin: '10px'
+    }, parentEl);
+    button.innerText = title;
+    button.addEventListener('click', () => {
+      this.click();
+    });
+  }
+
+  onClick(callback) {
+    this.callback = callback;
+  }
+
+  click() {
+    //console.log('click');
+    if (this.callback) this.callback();
+  }
+
+}
+
+var _default = Button;
+exports.default = _default;
+},{"./util":"4ba43b1ef261e6617e63062b8de9f094"}],"e2d3b075cb0f95ba217881a8dba01c87":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+class Result {
+  constructor(parentEl) {
+    this.el = (0, _util.createElement)('div', {
+      border: '1px solid gray',
+      height: '10em'
+    }, parentEl);
+  }
+
+  update(data) {
+    this.el.innerHTML = data;
+  }
+
+}
+
+var _default = Result;
+exports.default = _default;
+},{"./util":"4ba43b1ef261e6617e63062b8de9f094"}],"ba92ee23cfee3b33a6a843caf405d7a1":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.showWifiList = showWifiList;
+exports.refreshWifiList = refreshWifiList;
+
+var _urls = _interopRequireDefault(require("../Serv/urls"));
+
+var _util = require("./util");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function refreshWifiList(wifiList) {
+  if (wifiList) {
+    refreshList(wifiList);
+  } else {
+    var get_wifiList = fetch(_urls.default.get_wifiList_ssids);
+    get_wifiList.then(response => response.json()).then(wifiList => {
+      refreshList(wifiList);
+    });
+  }
+}
+
+;
+
+function refreshList(wifiList) {
+  var input_element = document.getElementsByName('inputWifiList');
+  var datalist = document.getElementById(input_element[0].list.id);
+  const tab = wifiList; // at this point input_element.list.id is equals to datalist.id
+  // ... update datalist element here
+  //the last element in the datalist is hidden network we need to conserve this 
+
+  if (datalist.options.length - 1 == tab.length) {
+    for (var i = 0; i < datalist.options.length - 1; i++) {
+      datalist.options[i].value = tab[i];
+      datalist.options[i].text = tab[i];
+    }
+  } else if (datalist.options.length - 1 > tab.length) {
+    for (var i = 0; i < datalist.options.length - 1; i++) {
+      if (tab[i]) {
+        datalist.options[i].value = tab[i];
+        datalist.options[i].text = tab[i];
+      } else {
+        datalist.options[i].remove();
+      }
+    }
+  } else {
+    var lastIndex = datalist.options[datalist.options.length - 1].value;
+    var diffItem = tab.length - (datalist.options.length - 1);
+
+    for (var j = 0; j < diffItem; j++) {
+      var opt = (0, _util.createElement)('option', {}, datalist);
+      opt.text = " ";
+    }
+
+    for (var i = 0; i < tab.length; i++) {
+      datalist.options[i].value = tab[i];
+      datalist.options[i].text = tab[i];
+    }
+
+    datalist.options[datalist.options.length - 1].text = lastIndex;
+    datalist.options[datalist.options.length - 1].value = lastIndex;
+  } // And now the trick:
+
+
+  input_element[0].setAttribute('list', '');
+  input_element[0].setAttribute('list', datalist.id);
+}
+
+function showWifiList(evt) {
+  //console.log(evt.target.checked);
+  var wifiList = document.getElementsByClassName('WifiList');
+
+  for (var i = 0; i < wifiList.length; i++) {
+    wifiList[i].hidden = wifiList[i].hidden != true ? true : false;
+
+    if (evt && evt.target.checked == false) {
+      wifiList[i].hidden = true;
+    }
+  }
+}
+
+;
+},{"./util":"4ba43b1ef261e6617e63062b8de9f094","../Serv/urls":"64f0db400ff05b1e1d36729c707d840b"}]},{},["9bd8da33dda5445de448aada4b043998","117d340aac48b3532ba7fce0acd67995"], null)
+
+//# sourceMappingURL=app.58409adc.js.map

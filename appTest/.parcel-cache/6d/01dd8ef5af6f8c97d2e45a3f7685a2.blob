@@ -1,0 +1,263 @@
+"use strict";
+
+var _util = require("./util");
+
+/*import screenForm from './screenForm';
+import networkForm from'./networkForm';
+*/
+let b = document.body;
+b.style.margin = 0;
+b.style.padding = 0;
+b.style.backgroundColor = 'lightgrey';
+let globalBox = (0, _util.createElement)('div', {
+  width: '100%',
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  border: '5px solid pink'
+}, b);
+let netForm;
+let scrnForm;
+
+window.onload = function () {
+  var networkCl = createColumn(globalBox, 'Network Configuration');
+  var get_data_device = fetch('http://localhost:80/info1');
+  get_data_device.then(response => response.json()).then(dataDevice => {
+    // networkForm.updateNetworkForm(Network.content,dataDevice);
+    netForm = new NetworkTableForm(dataDevice, networkCl.content); //console.log(netForm);
+  });
+  get_data_device.catch(e => {
+    console.error(e);
+  });
+  const btnHideShowNet = new Button('Hide/Show', networkCl.column);
+  btnHideShowNet.onClick(() => {
+    networkCl.content.style.visibility = networkCl.content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  }); //const defaultValuesNet = networkCl.content;
+
+  const btnResetNet = new Button('Reset', networkCl.column);
+  btnResetNet.onClick(() => {//networkCl.content =defaultValuesNet;
+  });
+  const btnSubmitNet = new Button('Submit', networkCl.column);
+  const resultNetform = new Result(networkCl.column);
+  btnSubmitNet.onClick(() => {
+    const data = netForm.getData();
+    resultNetform.update(JSON.stringify(data));
+  });
+  var screenCl = createColumn(globalBox, 'Screen Resolution Configuration');
+  var get_data_screen = fetch('http://localhost:80/info2');
+  get_data_screen.then(response => response.json()).then(dataScreen => {
+    //screenForm.updateVideoForm(Screen.content, dataScreen);
+    scrnForm = new ScreenTableForm(dataScreen, screenCl.content);
+  });
+  get_data_screen.catch(e => {
+    console.error(e);
+  });
+  const btnHideShowScrn = new Button('Hide/Show', screenCl.column);
+  btnHideShowScrn.onClick(() => {
+    screenCl.content.style.visibility = screenCl.content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  }); //a tester 
+  //	const defaultValuesScrn =screenCl.content;
+  //console.log(screenCl.content)
+
+  const btnResetScrn = new Button('Reset', screenCl.column);
+  btnResetScrn.onClick(() => {//	screenCl.content=defaultValuesScrn;
+  });
+  const btnSubmitScrn = new Button('Submit', screenCl.column);
+  const resultScrnForm = new Result(screenCl.column);
+  btnSubmitScrn.onClick(() => {
+    const data = scrnForm.getData();
+    resultScrnForm.update(JSON.stringify(data));
+  });
+};
+
+function createColumn(parentEl, title) {
+  let cl = (0, _util.createElement)('div', {
+    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    border: '1px dotted blue',
+    marginRight: '1em',
+    marginTop: 0
+  }, parentEl);
+  let header = (0, _util.createElement)('div', {
+    color: 'black',
+    fontSize: '40px',
+    fontWeight: 'bold',
+    border: '1px solid green'
+  }, cl);
+  header.innerHTML = title;
+  let content = (0, _util.createElement)('div', {
+    fontFamily: 'sans-serif'
+  }, cl);
+  return {
+    column: cl,
+    header: header,
+    content: content
+  };
+}
+
+class Button {
+  constructor(title, parentEl) {
+    const button = (0, _util.createElement)('button', {
+      margin: '10px'
+    }, parentEl);
+    button.innerText = title;
+    button.addEventListener('click', () => {
+      this.click();
+    });
+  }
+
+  onClick(callback) {
+    this.callback = callback;
+  }
+
+  click() {
+    if (this.callback) this.callback;
+  }
+
+}
+
+class Result {
+  constructor(parentEl) {
+    this.el = (0, _util.createElement)('div', {
+      border: '1px solid gray',
+      height: '10em'
+    }, parentEl);
+  }
+
+  update(data) {
+    this.el.innerHTML = data;
+  }
+
+}
+/*
+ PS: ne pas oublier la fct validSubmit qui verifie la saisie de chaque input:
+  si chaque input et bien rempli niveau pattern longueur maximal 
+ afin 
+ d'alerte l'utilisateur de ce qu'il ne va pas et 
+ de desactiver le btnSubmit lorsque les champs sont mal remplis.
+ */
+
+
+class NetworkTableForm {
+  constructor(def, parentEl) {
+    this.def = def; //console.log(this.def);
+
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _util.createElement)('table', {
+      width: '100%'
+    }, parentEl);
+    this.def.forEach((row, r) => {
+      if (r < 2) {
+        const rowEl = (0, _util.createElement)('tr', {}, this.table);
+        this.inputs.push([]); //console.log(this.inputs);
+
+        let td = (0, _util.createElement)('td', {}, rowEl);
+        td.innerHTML = row.type;
+      }
+      /*
+      			row.cols.forEach((c, i) => {
+      				let td = createElement('td', {}, rowEl);
+      				let input = createElement('input', {}, td);
+      				input.value = i;
+      				input.dataset["input"] = 'value_'+i;
+      				this.inputs[r].push(input);
+      			})*/
+
+    });
+  }
+
+  getData() {
+    const data = [];
+    this.inputs.forEach(row => {
+      let res = row.reduce((acc, el) => {
+        acc[el.dataset.input] = el.value;
+        return acc;
+      }, {});
+      data.push(res);
+    });
+    console.log(data);
+    return data;
+  }
+
+  transformBoolean(connected) {
+    if (connected == "100 (connected)") {
+      return true;
+    }
+
+    if (connected == "30 (disconnected)") {
+      return false;
+    }
+
+    return null;
+  }
+
+  disableNetworkBox(dhcpBox) {
+    var i;
+
+    if (dhcpBox.target.id == 0) {
+      var restrict = document.getElementsByName('restrict0');
+    } else if (dhcpBox.target.id == 1) {
+      var restrict = document.getElementsByName('restrict1');
+    }
+
+    if (dhcpBox.target.checked == true) {
+      for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = true;
+      }
+
+      i = 0;
+    } else {
+      for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled = false;
+      }
+    }
+  }
+
+}
+
+class ScreenTableForm {
+  constructor(def, parentEl) {
+    this.def = def;
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _util.createElement)('table', {
+      width: '100%'
+    }, parentEl); //console.log(this.def);
+
+    Object.keys(this.def).forEach((row, r) => {
+      const rowEl = (0, _util.createElement)('tr', {}, this.table);
+      this.inputs.push([]);
+      let td = (0, _util.createElement)('td', {}, rowEl);
+      td.innerHTML = row.name;
+      /*
+      			row.cols.forEach((c, i) => {
+      				let td = createElement('td', {}, rowEl);
+      				let input = createElement('input', {}, td);
+      				input.value = i;
+      				input.dataset["input"] = 'value_'+i;
+      				this.inputs[r].push(input);
+      			})*/
+    });
+  }
+
+  getData() {
+    const data = [];
+    this.inputs.forEach(row => {
+      let res = row.reduce((acc, el) => {
+        acc[el.dataset.input] = el.value;
+        return acc;
+      }, {});
+      data.push(res);
+    }); //console.log(data);
+
+    return data;
+  }
+
+}

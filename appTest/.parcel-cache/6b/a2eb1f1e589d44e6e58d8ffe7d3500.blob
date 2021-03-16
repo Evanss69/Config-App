@@ -1,0 +1,61 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+class ScreenForm {
+  constructor(data) {//const screenForm;
+  }
+
+  updateVideoForm(container, data) {
+    var table = (0, _util.createElement)('table', {
+      width: '100%'
+    }, container);
+    Object.keys(data).forEach(k => {
+      //console.log(k);
+      screenForm.addVideoLine(table, k, data[k]);
+    });
+  }
+
+  addVideoLine(container, name, def) {
+    //console.log(name);
+    var row = (0, _util.createElement)('tr', {}, container);
+    row.className = name;
+    var connected = (0, _util.createElement)('td', {}, row);
+    connected.innerHTML = def.connected ? "&check;" : "&cross;";
+    connected.className = row.className;
+    var nameEl = (0, _util.createElement)('td', {}, row);
+    nameEl.innerHTML = name;
+    nameEl.className = name;
+    var modes = (0, _util.createElement)('td', {}, row);
+    modes.className = row.className;
+    var modesSelect = (0, _util.createElement)('select', {}, modes);
+    modesSelect.className = row.className;
+
+    if (def.modes.length == 0) {
+      modesSelect.disabled = true;
+    } else {
+      def.modes.forEach(mode => {
+        var opt = (0, _util.createElement)('option', {}, modesSelect);
+        opt.text = `${mode.width}x${mode.height}@${mode.rate}`;
+      });
+      modesSelect.addEventListener('change', screenForm.modeSelected);
+    }
+  }
+
+  modeSelected(evt) {
+    //console.log(evt.target.parentElement.parentElement);
+    var myModeChoice = document.getElementsByClassName(evt.target.classList);
+    console.log(myModeChoice);
+    return myModeChoice;
+  }
+
+}
+
+;
+var _default = ScreenForm;
+exports.default = _default;

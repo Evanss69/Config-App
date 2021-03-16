@@ -1,0 +1,81 @@
+"use strict";
+
+var _util = require("./util");
+
+var _screenForm = _interopRequireDefault(require("./screenForm"));
+
+var _networkForm = _interopRequireDefault(require("./networkForm"));
+
+var _button = _interopRequireDefault(require("./button"));
+
+var _result = _interopRequireDefault(require("./result"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let b = document.body;
+b.style.margin = 0;
+b.style.padding = 0;
+b.style.backgroundColor = 'lightgrey';
+let globalBox = (0, _util.createElement)('div', {
+  width: '100%',
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  border: '5px solid pink'
+}, b);
+let netForm;
+let scrnForm;
+
+window.onload = function () {
+  var networkCl = (0, _util.createColumn)(globalBox, 'Network Configuration');
+  var get_data_device = fetch('http://localhost:80/info1');
+  get_data_device.then(response => response.json()).then(dataDevice => {
+    // networkForm.updateNetworkForm(Network.content,dataDevice);
+    netForm = new _networkForm.default(dataDevice, networkCl.content); //console.log(netForm);
+  });
+  get_data_device.catch(e => {
+    console.error(e);
+  });
+  const btnHideShowNet = new _button.default('Hide/Show', networkCl.column);
+  btnHideShowNet.onClick(() => {
+    networkCl.content.style.visibility = networkCl.content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  }); //const defaultValuesNet = networkCl.content;
+
+  const btnResetNet = new _button.default('Reset', networkCl.column);
+  btnResetNet.onClick(() => {
+    window.location.reload(); //networkCl.content =defaultValuesNet;
+  });
+  const btnSubmitNet = new _button.default('Submit', networkCl.column);
+  const resultNetform = new _result.default(networkCl.column);
+  btnSubmitNet.onClick(() => {
+    const data = netForm.getData();
+    resultNetform.update(JSON.stringify(data));
+  });
+  var screenCl = (0, _util.createColumn)(globalBox, 'Screen Resolution Configuration');
+  var get_data_screen = fetch('http://localhost:80/info2');
+  get_data_screen.then(response => response.json()).then(dataScreen => {
+    //screenForm.updateVideoForm(Screen.content, dataScreen);
+    scrnForm = new _screenForm.default(dataScreen, screenCl.content);
+  });
+  get_data_screen.catch(e => {
+    console.error(e);
+  });
+  const btnHideShowScrn = new _button.default('Hide/Show', screenCl.column);
+  btnHideShowScrn.onClick(() => {
+    screenCl.content.style.visibility = screenCl.content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  }); //a tester 
+
+  const defaultValuesScrn = screenCl.content;
+  console.log(defaultValuesScrn); //console.log(screenCl.content)
+
+  const btnResetScrn = new _button.default('Reset', screenCl.column);
+  btnResetScrn.onClick(() => {
+    // window.location.reload();
+    screenCl.content = defaultValuesScrn;
+  });
+  const btnSubmitScrn = new _button.default('Submit', screenCl.column);
+  const resultScrnForm = new _result.default(screenCl.column);
+  btnSubmitScrn.onClick(() => {
+    const data = scrnForm.getData();
+    resultScrnForm.update(JSON.stringify(data));
+  });
+};

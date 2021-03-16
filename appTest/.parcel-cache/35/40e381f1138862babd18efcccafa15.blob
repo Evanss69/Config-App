@@ -1,0 +1,255 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createElement = createElement;
+exports.createMenuItem = createMenuItem;
+exports.createMenuBar = createMenuBar;
+
+function createElement(type, style, parentEl) {
+  var el = document.createElement(type);
+
+  for (var attr in style) {
+    el.style[attr] = style[attr];
+  }
+
+  if (parentEl) parentEl.appendChild(el);
+  return el;
+}
+
+function createMenuItem(parentEl, title) {
+  let cl = createElement('div', {
+    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    border: '1px dotted blue',
+    marginRight: '1em',
+    marginTop: 0
+  }, parentEl);
+  let header = createElement('div', {
+    color: 'black',
+    fontSize: '40px',
+    fontWeight: 'bold',
+    border: '1px solid green'
+  }, cl);
+  header.innerHTML = title;
+  let content = createElement('div', {
+    fontFamily: 'sans-serif'
+  }, cl);
+  return {
+    column: cl,
+    header: header,
+    content: content
+  };
+}
+
+function createMenuBar(title, parentEl, onMenuClick) {
+  //console.log(title);
+  for (var index = 0; index < title.length; index++) {
+    let li = createElement('li', {
+      display: 'inline-flex',
+      justifyContent: 'space-between',
+      position: 'relative',
+      padding: '5px',
+      textAlign: 'center',
+      width: '20%',
+      verticalAlign: 'middle'
+    }, parentEl);
+    this.bt = createElement('button', {
+      position: 'relative',
+      marginLeft: '200px',
+      padding: '5px',
+      color: 'tomato',
+      textDecoration: 'none',
+      backgroundColor: 'black',
+      border: 'none',
+      cursor: 'pointer'
+    }, li);
+    this.bt.id = title[index];
+    this.bt.name = title[index];
+    this.bt.addEventListener('click', choiceMenu);
+
+    if (onMenuClick) {
+      MenuUI.setOnMenuClick(onMenuClick, this.bt);
+    }
+
+    let text = createElement('text', {
+      fontSize: '20px'
+    }, this.bt);
+    text.innerHTML = title[index];
+  }
+
+  function choiceMenu(evt) {
+    //console.log(evt.currentTarget)
+    const menuName = evt.currentTarget.name.toLowerCase();
+    const listMenu = ['network', 'screen', 'bluetooth', 'sound'];
+    var choice = document.getElementById(menuName);
+
+    if (choice) {
+      choice.hidden = false;
+      choice.style.visibility = 'visible';
+      choice.style.display = 'inline';
+
+      for (var i = 0; i < listMenu.length; i++) {
+        if (listMenu[i] != menuName) {
+          if (document.getElementById(listMenu[i]) != null) {
+            var otherMenu = document.getElementById(listMenu[i]);
+            otherMenu.hidden = true;
+            otherMenu.style.visibility = 'hidden';
+            otherMenu.style.display = 'none';
+          }
+        }
+      }
+    } else {}
+  }
+
+  return menu;
+
+  function setOnMenuClick(fn, bt) {
+    //   console.log(this.bt)
+    Menu.setOnMenuClick(fn, bt);
+  }
+}
+/*
+function createElInput(type,style,parentEl){
+var el=document.createElement('input');
+el.type=type;
+for (atr in type){
+el.type[atr]=type[atr];
+}
+for(attr in style){
+el.style[attr]=style[attr];
+}
+ if(parentEl) parentEl.appendChild(el);
+return el;
+ }
+*/
+
+/*function CheckSubmit(el,data,style,evt){
+return submit;
+};
+
+function createColumn(parentEl, title){
+  let cl = createElement('div', {
+    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    border: '1px dotted blue',
+    marginRight: '1em',
+    marginTop: 0
+  }, parentEl);
+
+  let header = createElement('div', {
+    color:'black',
+    fontSize:'40px',
+    fontWeight:'bold',
+    border: '1px solid green'
+  }, cl);
+  header.innerHTML = title;
+
+  let content = createElement('div', {
+    fontFamily:'sans-serif'
+  }, cl);
+  
+  createButtonForm(cl,content);
+  
+  return { column: cl, header: header, content: content }; 
+  
+}
+ function createButtonForm(parentEl,content){
+  let btnHideShow = createElement('button', {margin :'10px'}, parentEl);
+
+  btnHideShow.innerHTML = 'Show/Hide';
+
+  btnHideShow.addEventListener('click', function() {
+    content.style.visibility = content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  });
+  
+  let btnReset =createElement('button',{margin:'10px'},parentEl);
+
+  btnReset.innerHTML='Reset';
+
+  btnReset.addEventListener('click',function(){
+    window.location.reload();
+    
+  });
+
+  let btnSubmit = createElement('button',{margin:'10px'},parentEl);
+ // console.log(btnSubmit);
+  btnSubmit.innerHTML ='Submit';
+  
+  btnSubmit.addEventListener('click',function ConfirmSend(){
+    
+   if ( confirm( "Are you sure of your configuration?" ) ) {
+  // Code à éxécuter si le l'utilisateur clique sur "OK"
+  console.log(content.children);
+   // (content )
+ 
+} else {
+  // Code à éxécuter si l'utilisateur clique sur "Annuler" 
+}
+   });
+}
+ function createColumn(parentEl, title){
+  let cl = createElement('div', {
+    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    border: '1px dotted blue',
+    marginRight: '1em',
+    marginTop: 0
+  }, parentEl);
+
+  let header = createElement('div', {
+    color:'black',
+    fontSize:'40px',
+    fontWeight:'bold',
+    border: '1px solid green'
+  }, cl);
+  header.innerHTML = title;
+
+  let content = createElement('div', {
+    fontFamily:'sans-serif'
+  }, cl);
+  
+  createButtonForm(cl,content);
+  
+  return { column: cl, header: header, content: content }; 
+  
+}
+ function createButtonForm(parentEl,content){
+  let btnHideShow = createElement('button', {margin :'10px'}, parentEl);
+
+  btnHideShow.innerHTML = 'Show/Hide';
+
+  btnHideShow.addEventListener('click', function() {
+    content.style.visibility = content.style.visibility != 'visible' ? 'visible' : 'hidden';
+  });
+  
+  let btnReset =createElement('button',{margin:'10px'},parentEl);
+
+  btnReset.innerHTML='Reset';
+
+  btnReset.addEventListener('click',function(){
+    window.location.reload();
+    
+  });
+
+  let btnSubmit = createElement('button',{margin:'10px'},parentEl);
+ // console.log(btnSubmit);
+  btnSubmit.innerHTML ='Submit';
+  
+  btnSubmit.addEventListener('click',function ConfirmSend(){
+    
+   if ( confirm( "Are you sure of your configuration?" ) ) {
+  // Code à éxécuter si le l'utilisateur clique sur "OK"
+  console.log(content.children);
+   // (content )
+ 
+} else {
+  // Code à éxécuter si l'utilisateur clique sur "Annuler" 
+}
+   });
+}
+*/

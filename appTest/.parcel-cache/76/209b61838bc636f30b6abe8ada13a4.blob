@@ -1,0 +1,325 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _ui = require("./ui");
+
+var _networkFormUtil = _interopRequireDefault(require("./networkFormUtil"));
+
+var _button = _interopRequireDefault(require("./button"));
+
+var _result = _interopRequireDefault(require("./result"));
+
+var _wifiListUtil = require("./wifiListUtil");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class NetworkTableFormUI {
+  constructor(def, wifiList, parentEl) {
+    this.def = def;
+    var wifiState = this.def[1].state;
+    this.wifiList = wifiList;
+    this.inputs = [];
+    this.createTable(parentEl);
+    this.btnShowWifiList = new _button.default('Show_Wifi_List', parentEl, wifiState, 'btnWifiList');
+    this.btnShowWifiList.onClick(_wifiListUtil.showWifiList);
+    this.btnResetList = new _button.default('Reset_Wifi_List', parentEl, wifiState, 'btnWifiList');
+    this.btnResetList.onClick(_wifiListUtil.refreshWifiList);
+    this.resultNetForm = new _result.default('resultNetForm', parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _ui.createElement)('table', {
+      width: '100%',
+      paddingTop: '20px'
+    }, parentEl);
+    let rowIndex = 0;
+    this.def.forEach((dataConfigNetwork, r) => {
+      //r<2 because loopback unmanaged and device wifi 2 not used
+      if (r < 2) {
+        var connectionType = dataConfigNetwork.type;
+        this.createRow(rowIndex, connectionType, dataConfigNetwork, this.wifiList);
+        rowIndex++;
+      }
+    });
+  }
+
+  createRow(id, connectionType, dataConfigNetwork, wifiList) {
+    const rowEl = (0, _ui.createElement)('tr', {
+      marginBottom: '20px'
+    }, this.table);
+    this.inputs.push([]);
+    var content;
+
+    var isConnected = _networkFormUtil.default.transformBooleanNetworkState(dataConfigNetwork.state);
+
+    if (isConnected === null) {
+      content = "?";
+    } else if (content = isConnected ? "&check;" : "&cross;") ;
+
+    dataConfigNetwork.ip = dataConfigNetwork.ip && dataConfigNetwork.ip.split('/') || '';
+    if (dataConfigNetwork.ip != '') dataConfigNetwork.ip[1] = '/' + dataConfigNetwork.ip[1];
+    const info = [{
+      cols: [{
+        type: 'td',
+        content: "IP address",
+        value: dataConfigNetwork.ip[0],
+        dataset: {
+          ip: dataConfigNetwork.ip[0]
+        }
+      }, {
+        type: 'td',
+        content: "Mask",
+        value: dataConfigNetwork.ip[1],
+        dataset: {
+          mask: dataConfigNetwork.ip[1]
+        }
+      }, {
+        type: 'td',
+        content: "Gateway",
+        value: dataConfigNetwork.gateway,
+        dataset: {
+          gateway: dataConfigNetwork.gateway
+        }
+      }, {
+        type: 'td',
+        content: "DNS1",
+        value: dataConfigNetwork.dns1,
+        dataset: {
+          dns1: dataConfigNetwork.dns1
+        }
+      }, {
+        type: 'td',
+        content: "DNS2",
+        value: dataConfigNetwork.dns2,
+        dataset: {
+          dns2: dataConfigNetwork.dns2
+        }
+      }]
+    }];
+    this.createCell(rowEl, this.inputs[id], {
+      content: content,
+      value: dataConfigNetwork.state
+    });
+    this.createCell(rowEl, this.inputs[id], {
+      dataset: {
+        type: connectionType
+      },
+      content: connectionType,
+      value: connectionType
+    });
+    let activateEl = this.createCell(rowEl, this.inputs[id], {
+      content: 'Activate'
+    });
+    let dhcpEl = this.createCell(rowEl, this.inputs[id], {
+      content: 'DHCP'
+    });
+    this.createDhcpCheckbox(dhcpEl, connectionType, this.inputs[id], id);
+    info[0].cols.forEach(td => {
+      var dataName = Object.entries(td.dataset)[0][0];
+      var dataValue = Object.entries(td.dataset)[0][1];
+      let el = this.createCell(rowEl, this.inputs[id], {
+        content: td.content,
+        style: {
+          fontWeight: 'bold'
+        }
+      });
+      this.createNetworkParamInput(el, connectionType, this.inputs[id], id, {
+        value: td.value,
+        dataset: {
+          restrict: 'inputRestrict' + id,
+          dataName: dataName,
+          dataValue: dataValue
+        }
+      });
+    });
+
+    if (rowEl.children[1].value == 'wifi') {
+      const rowElWifi = (0, _ui.createElement)('tr', {}, this.table);
+      const displayCell = this.createCell(rowElWifi, this.inputs[id]);
+      let wifiListEl = this.createCell(rowElWifi, this.inputs[id], {
+        content: 'SSID',
+        hidden: true,
+        className: 'WifiList',
+        style: {
+          fontWeight: 'bold'
+        }
+      }); //paddingRight: '50%'
+
+      this.createWifiList(wifiListEl, connectionType, dataConfigNetwork.name, wifiList, this.inputs[id], _networkFormUtil.default.wifiSelected.bind(this));
+      let wifiPasswordEl = this.createCell(rowElWifi, this.inputs[id], {
+        content: 'Password',
+        hidden: true,
+        className: 'WifiList',
+        style: {
+          fontWeight: 'bold'
+        }
+      }); //paddingRight: '50%'
+
+      this.createPassword(wifiPasswordEl, connectionType, this.inputs[id]);
+      let showPasswordEl = this.createCell(rowElWifi, this.inputs[id], {
+        content: 'Show password',
+        hidden: true,
+        className: 'WifiList',
+        style: {
+          fontWeight: 'normal'
+        }
+      });
+      let showPasswordBox = (0, _ui.createElement)('input', {}, showPasswordEl);
+      showPasswordBox.type = 'checkbox';
+      showPasswordBox.addEventListener('click', () => {
+        var x = document.getElementById("myPasswordBox");
+
+        if (x.type === "password") {
+          x.type = "text";
+        } else {
+          x.type = "password";
+        }
+      });
+    }
+
+    let underRow = (0, _ui.createElement)('tr', {}, this.table);
+    const displayCell = this.createCell(underRow, this.inputs[id]);
+    let btSubEl = this.createCell(underRow, this.inputs[id]);
+    let btnSubmitNet = new _button.default('Submit', btSubEl, {}, 'Submit_network_params', id);
+    btnSubmitNet.onClick(_networkFormUtil.default.loadParams.bind(this));
+    this.createActiveBox(activateEl, connectionType, this.inputs[id], id, {
+      state: dataConfigNetwork.state
+    });
+  }
+
+  createCell(rowEl, inputs, opts = {}) {
+    let el = (0, _ui.createElement)('td', {}, rowEl); // el.style.paddingTop='10px';
+
+    if (opts.dataset) {
+      Object.entries(opts.dataset).forEach(kv => {
+        el.dataset[kv[0]] = kv[1];
+      });
+    }
+
+    if (opts.content) el.innerHTML = opts.content;
+    if (opts.value) el.value = opts.value;
+    if (opts.hidden) el.hidden = opts.hidden;
+    if (opts.className) el.className = opts.className;
+    if (opts.name) el.name = opts.name;
+
+    if (opts.style) {
+      Object.entries(opts.style).forEach(kv => {
+        el.style[kv[0]] = kv[1];
+      });
+    }
+
+    return el;
+  }
+
+  createWifiList(parentEl, type, name, list, inputs, onChange) {
+    let inputWifiList = (0, _ui.createElement)('input', {
+      width: '125px'
+    }, parentEl);
+    inputWifiList.name = 'inputWifiList';
+    inputWifiList.setAttribute('list', 'wifiList');
+    inputWifiList.value = name;
+    let wifiList = (0, _ui.createElement)('datalist', {}, parentEl);
+    wifiList.id = 'wifiList';
+    wifiList.dataset['type'] = type;
+    wifiList.addEventListener('change', onChange);
+    list.forEach(value => {
+      let opt = (0, _ui.createElement)('option', {}, wifiList);
+      opt.text = value;
+      opt.value = value;
+    });
+    let hiddenWifi = (0, _ui.createElement)('option', {}, wifiList);
+    hiddenWifi.text = 'name your hidden wifi';
+    inputs.push(inputWifiList);
+    return wifiList;
+  }
+
+  createNetworkParamInput(parentEl, type, inputs, id, opts = {}) {
+    let el = (0, _ui.createElement)('input', {
+      width: '125px'
+    }, parentEl);
+    inputs.push(el);
+    el.dataset['type'] = type;
+    el.disabled = 'true';
+    el.maxLength = 15;
+    el.placeholder = '*.*.*.*';
+
+    if (id == 0) {
+      el.name = 'ethernet';
+    } else {
+      el.name = 'wifi';
+    }
+
+    ;
+    if (opts.value) el.defaultValue = opts.value;
+    if (opts.dataset.restrict) el.className = opts.dataset.restrict;
+    if (opts.dataset.dataName && opts.dataset.dataValue) el.dataset[opts.dataset.dataName] = opts.dataset.dataValue;
+    el.addEventListener('change', _networkFormUtil.default.validInput);
+  }
+
+  createDhcpCheckbox(parentEl, type, inputs, id, opts = {}) {
+    let dhcpBox = (0, _ui.createElement)('input', {}, parentEl);
+    inputs.push(dhcpBox);
+    dhcpBox.dataset['type'] = type;
+    dhcpBox.type = 'checkbox';
+    dhcpBox.defaultChecked = true;
+    dhcpBox.id = id;
+
+    if (id == 0) {
+      dhcpBox.name = 'ethernet';
+    } else {
+      dhcpBox.name = 'wifi';
+    }
+
+    ;
+    dhcpBox.addEventListener('change', _networkFormUtil.default.disableNetworkBox);
+  }
+
+  createActiveBox(parentEl, type, inputs, id, opts = {}) {
+    let activeBox = (0, _ui.createElement)('input', {}, parentEl);
+    activeBox.dataset['type'] = type;
+    activeBox.type = 'checkbox';
+    activeBox.name = 'active' + id;
+
+    if (opts.state == '100 (connected)') {
+      activeBox.checked = true;
+      activeBox.defaultChecked = true;
+
+      _networkFormUtil.default.displayNetworkBox(activeBox);
+    } else {
+      activeBox.checked = false;
+      activeBox.defaultChecked = false;
+
+      _networkFormUtil.default.displayNetworkBox(activeBox);
+    }
+
+    activeBox.addEventListener('change', _networkFormUtil.default.activeConnection.bind(this));
+    if (type == 'wifi') activeBox.addEventListener('click', _wifiListUtil.showWifiList);
+  }
+
+  createPassword(parentEl, type, inputs) {
+    let passwordBox = (0, _ui.createElement)('input', {
+      width: '125px'
+    }, parentEl);
+    inputs.push(passwordBox);
+    passwordBox.type = 'password';
+    passwordBox.id = 'myPasswordBox';
+    passwordBox.dataset['type'] = type; //passwordBox.hidden=true;
+  }
+
+  getParams() {
+    //console.log(this.inputs);
+    return _networkFormUtil.default.getParams(this.inputs);
+  }
+
+  sendParams(params) {
+    _networkFormUtil.default.sendParams(params);
+  }
+
+}
+
+var _default = NetworkTableFormUI;
+exports.default = _default;

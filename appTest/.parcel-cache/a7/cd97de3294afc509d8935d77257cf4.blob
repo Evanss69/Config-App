@@ -1,0 +1,111 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _ui = require("./ui");
+
+var _button = _interopRequireDefault(require("./button"));
+
+var _screenFormUtil = _interopRequireDefault(require("./screenFormUtil"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ScreenTableFormUI {
+  constructor(def, parentEl) {
+    this.def = def;
+    this.inputs = [];
+    this.createTable(parentEl);
+    this.btnSubmitScrn = new _button.default('Submit', parentEl);
+  }
+
+  setOnClick(fn) {
+    _screenFormUtil.default.setOnClick(fn, this.btnSubmitScrn);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _ui.createElement)('table', {
+      width: '100%',
+      paddingTop: '15px'
+    }, parentEl);
+    let rowIndex = 0;
+
+    for (var [name, dataScreen] of Object.entries(this.def)) {
+      this.createRow(rowIndex, name, dataScreen);
+      rowIndex++;
+    }
+  }
+
+  createRow(id, name, dataScreen) {
+    const rowEl = (0, _ui.createElement)('tr', {}, this.table);
+    this.inputs.push([]);
+    const content = dataScreen.connected ? "&check;" : "&cross;";
+    this.createCell(rowEl, this.inputs[id], {
+      content: content,
+      value: dataScreen.connected,
+      dataset: {
+        connected: dataScreen.connected
+      }
+    });
+    this.createCell(rowEl, this.inputs[id], {
+      content: name,
+      value: name,
+      dataset: {
+        name: name
+      }
+    });
+    let modesEl = this.createCell(rowEl, this.inputs[id], {
+      dataset: {
+        mode: dataScreen.modes
+      }
+    });
+    this.createSelect(modesEl, name, dataScreen.modes, this.inputs[id], _screenFormUtil.default.modesSelected.bind(this));
+  }
+
+  createCell(rowEl, inputs, opts = {}) {
+    let el = (0, _ui.createElement)('td', {}, rowEl);
+
+    if (opts.dataset) {
+      Object.entries(opts.dataset).forEach(kv => {
+        el.dataset[kv[0]] = kv[1];
+      });
+    }
+
+    if (opts.content) el.innerHTML = opts.content;
+    if (opts.value) el.value = opts.value;
+    return el;
+  }
+
+  createSelect(parentEl, name, values, inputs, onChange) {
+    let modesSelect = (0, _ui.createElement)('select', {}, parentEl);
+    inputs.push(modesSelect);
+    modesSelect.dataset['name'] = name;
+
+    if (values.length == 0) {
+      modesSelect.disabled = true;
+      return;
+    }
+
+    modesSelect.addEventListener('change', onChange);
+    values.forEach(mode => {
+      let opt = (0, _ui.createElement)('option', {}, modesSelect);
+      opt.text = `${mode.width}x${mode.height}@${mode.rate}`;
+    });
+    return modesSelect;
+  }
+
+  getParams() {
+    //console.log(this.inputs);
+    return _screenFormUtil.default.getParams(this.inputs);
+  }
+
+  sendParams(params) {
+    _screenFormUtil.default.sendParams(params);
+  }
+
+}
+
+var _default = ScreenTableFormUI;
+exports.default = _default;

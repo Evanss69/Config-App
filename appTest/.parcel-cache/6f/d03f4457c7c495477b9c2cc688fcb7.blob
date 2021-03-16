@@ -1,0 +1,594 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+var _networkFormUtil = _interopRequireDefault(require("./networkFormUtil"));
+
+var _button = _interopRequireDefault(require("./button"));
+
+var _result = _interopRequireDefault(require("./result"));
+
+var _wifiListUtil = require("./wifiListUtil");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class NetworkTableFormUI {
+  constructor(def, parentEl) {
+    this.def = def;
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _util.createElement)('table', {
+      width: '100%',
+      paddingTop: '20px'
+    }, parentEl);
+    let rowIndex = 0;
+    this.def.forEach((dataConfigNetwork, r) => {
+      //r<2 because loopback unmanaged and device wifi 2 not used
+      if (r < 2) {
+        var connectionType = dataConfigNetwork.type;
+        this.createRow(rowIndex, connectionType, dataConfigNetwork);
+        rowIndex++;
+      }
+    });
+  }
+
+  createRow(id, connectionType, dataConfigNetwork) {
+    const rowEl = (0, _util.createElement)('tr', {
+      marginBottom: '20px'
+    }, this.table);
+    this.inputs.push([]);
+    var content;
+
+    var isConnected = _networkFormUtil.default.transformBooleanNetworkState(dataConfigNetwork.state);
+
+    if (isConnected === null) {
+      content = "?";
+    } else if (content = isConnected ? "&check;" : "&cross;") ;
+
+    dataConfigNetwork.ip = dataConfigNetwork.ip && dataConfigNetwork.ip.split('/') || '';
+    if (dataConfigNetwork.ip != '') dataConfigNetwork.ip[1] = '/' + dataConfigNetwork.ip[1];
+    const info = [{
+      cols: [{
+        type: 'td',
+        content: "IP address",
+        value: dataConfigNetwork.ip[0],
+        dataset: {
+          ip: dataConfigNetwork.ip[0]
+        }
+      }, {
+        type: 'td',
+        content: "Mask",
+        value: dataConfigNetwork.ip[1],
+        dataset: {
+          mask: dataConfigNetwork.ip[1]
+        }
+      }, {
+        type: 'td',
+        content: "Gateway",
+        value: dataConfigNetwork.gateway,
+        dataset: {
+          gateway: dataConfigNetwork.gateway
+        }
+      }, {
+        type: 'td',
+        content: "DNS1",
+        value: dataConfigNetwork.dns1,
+        dataset: {
+          dns1: dataConfigNetwork.dns1
+        }
+      }, {
+        type: 'td',
+        content: "DNS2",
+        value: dataConfigNetwork.dns2,
+        dataset: {
+          dns2: dataConfigNetwork.dns2
+        }
+      }]
+    }];
+    this.createCell(rowEl, this.inputs[id], {
+      content: content,
+      value: dataConfigNetwork.state
+    });
+    this.createCell(rowEl, this.inputs[id], {
+      dataset: {
+        type: connectionType
+      },
+      content: connectionType,
+      value: connectionType
+    }); //let activateEl = this.createCell(rowEl, this.inputs[id], { content: 'Activate' });
+
+    let dhcpEl = this.createCell(rowEl, this.inputs[id], {
+      content: 'DHCP'
+    });
+    this.createDhcpCheckbox(dhcpEl, connectionType, this.inputs[id], id);
+    info[0].cols.forEach(td => {
+      var dataName = Object.entries(td.dataset)[0][0];
+      var dataValue = Object.entries(td.dataset)[0][1];
+      let el = this.createCell(rowEl, this.inputs[id], {
+        content: td.content,
+        style: {
+          fontWeight: 'bold'
+        }
+      });
+      this.createNetworkParamInput(el, connectionType, this.inputs[id], id, {
+        value: td.value,
+        dataset: {
+          restrict: 'inputRestrict' + id,
+          dataName: dataName,
+          dataValue: dataValue
+        }
+      });
+    });
+
+    if (rowEl.children[1].value == 'wifi') {
+      const rowElWifi = (0, _util.createElement)('tr', {}, this.table);
+      const displayCell = this.createCell(rowElWifi, this.inputs[id]);
+      /* let wifiListEl = this.createCell(rowElWifi, this.inputs[id], { content: 'SSID', hidden: true, className: 'WifiList', style: { fontWeight: 'bold',  } });//paddingRight: '50%'
+       this.createWifiList(wifiListEl, connectionType,dataConfigNetwork.name ,wifiList, this.inputs[id], NetworkFormUtil.wifiSelected.bind(this));
+      
+        let wifiPasswordEl = this.createCell(rowElWifi, this.inputs[id], { content: 'Password', hidden: true, className: 'WifiList', style: { fontWeight: 'bold', } });//paddingRight: '50%'
+       createPassword(wifiPasswordEl, connectionType, this.inputs[id]);
+        let showPasswordEl = this.createCell(rowElWifi, this.inputs[id], {content:'Show password',hidden:true,className:'WifiList',style:{fontWeight:'normal' }});
+       let showPasswordBox = createElement('input', {}, showPasswordEl);
+       showPasswordBox.type = 'checkbox';
+       showPasswordBox.addEventListener('click', () => {
+         var x = document.getElementById("myPasswordBox");
+         if (x.type === "password") {
+           x.type = "text";
+         } else {
+           x.type = "password";
+         }
+       });*/
+    }
+
+    let underRow = (0, _util.createElement)('tr', {}, this.table);
+    const displayCell = this.createCell(underRow, this.inputs[id]);
+    let btSubEl = this.createCell(underRow, this.inputs[id]);
+    let btnSubmitNet = new _button.default('Submit', btSubEl, {}, 'Submit_network_params', id);
+    btnSubmitNet.onClick(_networkFormUtil.default.loadParams.bind(this)); //this.createActiveBox(activateEl, connectionType, this.inputs[id], id, { state: dataConfigNetwork.state });
+  }
+
+  createCell(rowEl, inputs, opts = {}) {
+    let el = (0, _util.createElement)('td', {}, rowEl); // el.style.paddingTop='10px';
+
+    if (opts.dataset) {
+      Object.entries(opts.dataset).forEach(kv => {
+        el.dataset[kv[0]] = kv[1];
+      });
+    }
+
+    if (opts.content) el.innerHTML = opts.content;
+    if (opts.value) el.value = opts.value;
+    if (opts.hidden) el.hidden = opts.hidden;
+    if (opts.className) el.className = opts.className;
+    if (opts.name) el.name = opts.name;
+
+    if (opts.style) {
+      Object.entries(opts.style).forEach(kv => {
+        el.style[kv[0]] = kv[1];
+      });
+    }
+
+    return el;
+  }
+
+  createWifiList(parentEl, type, name, list, inputs, onChange) {
+    let inputWifiList = (0, _util.createElement)('input', {
+      width: '125px'
+    }, parentEl);
+    inputWifiList.name = 'inputWifiList';
+    inputWifiList.setAttribute('list', 'wifiList');
+    inputWifiList.value = name;
+    let wifiList = (0, _util.createElement)('datalist', {}, parentEl);
+    wifiList.id = 'wifiList';
+    wifiList.dataset['type'] = type;
+    wifiList.addEventListener('change', onChange);
+    /* list.forEach((value) => {
+       let opt = createElement('option', {}, wifiList);
+       opt.text = value;
+       opt.value = value;
+     });
+     let hiddenWifi = createElement('option', {}, wifiList);
+     hiddenWifi.text = 'name your hidden wifi';
+     inputs.push(inputWifiList);*/
+
+    return wifiList;
+  }
+
+  createNetworkParamInput(parentEl, type, inputs, id, opts = {}) {
+    let el = (0, _util.createElement)('input', {
+      width: '125px'
+    }, parentEl);
+    inputs.push(el);
+    el.dataset['type'] = type;
+    el.disabled = 'true';
+    el.maxLength = 15;
+    el.placeholder = '*.*.*.*';
+
+    if (id == 0) {
+      el.name = 'ethernet';
+    } else {
+      el.name = 'wifi';
+    }
+
+    ;
+    if (opts.value) el.defaultValue = opts.value;
+    if (opts.dataset.restrict) el.className = opts.dataset.restrict;
+    if (opts.dataset.dataName && opts.dataset.dataValue) el.dataset[opts.dataset.dataName] = opts.dataset.dataValue;
+    el.addEventListener('change', _networkFormUtil.default.validInput);
+  }
+
+  createDhcpCheckbox(parentEl, type, inputs, id, opts = {}) {
+    let dhcpBox = (0, _util.createElement)('input', {}, parentEl);
+    inputs.push(dhcpBox);
+    dhcpBox.dataset['type'] = type;
+    dhcpBox.type = 'checkbox';
+    dhcpBox.defaultChecked = true;
+    dhcpBox.id = id;
+
+    if (id == 0) {
+      dhcpBox.name = 'ethernet';
+    } else {
+      dhcpBox.name = 'wifi';
+    }
+
+    ; // dhcpBox.addEventListener('change', NetworkFormUtil.disableNetworkBox);
+  }
+  /*createActiveBox(parentEl, type, inputs, id, opts = {}) {
+     let activeBox = createElement('input', {}, parentEl);
+    activeBox.dataset['type'] = type;
+    activeBox.type = 'checkbox';
+    activeBox.name = 'active' + id;
+    if (id == 1) {
+      if ((opts.state == '100 (connected)') || (opts.state == '30 (disconnected)')) {
+        activeBox.checked = true; activeBox.defaultChecked = true; NetworkFormUtil.displayNetworkBox(activeBox)
+      } else {
+        activeBox.checked = false; activeBox.defaultChecked = false; NetworkFormUtil.displayNetworkBox(activeBox);
+      }
+    } else {
+      if (opts.state == '100 (connected)') {
+        activeBox.checked = true; activeBox.defaultChecked = true; NetworkFormUtil.displayNetworkBox(activeBox)
+      } else {
+        activeBox.checked = false; activeBox.defaultChecked = false; NetworkFormUtil.displayNetworkBox(activeBox);
+      }
+    }
+    activeBox.addEventListener('change', NetworkFormUtil.activeConnection);
+    if (type == 'wifi') activeBox.addEventListener('click', showWifiList);
+   }*/
+
+
+  getParams() {
+    return _networkFormUtil.default.getParams(this.inputs);
+  }
+
+  sendParams(params) {
+    _networkFormUtil.default.sendParams(params);
+  }
+
+}
+
+var _default = NetworkTableFormUI;
+/*
+import {createElement,createColumn} from './util';
+import screenForm from './screenForm';
+import networkForm from'./networkForm';
+
+
+
+var b =document.body;
+b.style.margin =0;
+b.style.padding =0;
+b.style.backgroundColor ='lightgrey';
+
+var globalBox=createElement('div',{
+  width:'100%',
+  display :'grid',
+  gridTemplateColumns:'1fr 1fr',
+  border :'5px solid pink'
+},b);
+
+
+var Network = createColumn(globalBox, 'Network Configuration');
+var get_data_device = fetch('http://localhost:80/info1');
+get_data_device
+.then(response => response.json())
+		.then((dataDevice) => {
+            networkForm.updateNetworkForm(Network.content,dataDevice);
+
+  })
+  get_data_device.catch((e) => {
+    console.error(e);
+  });
+
+var Screen = createColumn(globalBox, 'Screen Resolution Configuration');
+var get_data_screen = fetch('http://localhost:80/info2');
+get_data_screen
+.then(response => response.json())
+  .then((dataScreen) => {
+    screenForm.updateVideoForm(Screen.content, dataScreen);
+    
+    })
+		get_data_screen.catch((e) => {
+			console.error(e);
+    });
+    */
+
+/*
+PS: ne pas oublier la fct validSubmit qui verifie la saisie de chaque input:
+si chaque input et bien rempli niveau pattern longueur maximal 
+afin 
+d'alerte l'utilisateur de ce qu'il ne va pas et 
+de desactiver le btnSubmit lorsque les champs sont mal remplis.
+*/
+
+/*class NetworkTableForm{
+	
+  constructor(def,parentEl){
+  this.def=def;
+  //console.log(this.def);
+  this.inputs = [];
+  this.createTable(parentEl);
+}
+createTable(parentEl) {
+  this.table = createElement('table', {width:'100%'}, parentEl);
+
+  this.def.forEach((row, r) => {
+    if (r<2){
+      const rowEl = createElement('tr', {}, this.table);
+    this.inputs.push([]);
+    //console.log(this.inputs);
+    let td = createElement('td', {}, rowEl);
+    td.innerHTML = row.type;
+    }
+  });
+
+}
+
+getData(){
+  const data = [];
+             this.inputs.forEach((row) => {
+                      let res = row.reduce((acc, el) => {
+                              acc[el.dataset.input] = el.value;
+                              return acc;
+                      }, {});
+                      data.push(res);
+              });
+              //console.log(data);
+              return data;
+              }
+transformBoolean(connected){
+    if (connected == "100 (connected)"){
+       return true;
+    } 
+    if(connected=="30 (disconnected)"){
+      return false;
+    }
+  return null ;
+}
+
+ disableNetworkBox(dhcpBox){
+    var i;
+    if (dhcpBox.target.id==0){
+        var restrict=document.getElementsByName('restrict0');
+    }else if(dhcpBox.target.id==1){
+        var restrict=document.getElementsByName('restrict1');
+    }
+    if (dhcpBox.target.checked==true){
+    for (i = 0; i < restrict.length; i++) {
+            restrict[i].disabled=true;
+          } 
+      i=0;
+
+    }
+    else{
+    for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled=false;
+        }
+ 
+    }
+}
+
+}
+
+class NetworkForm{
+  constructor(def,parentEl){
+    this.def=def;
+    //console.log(this.def);
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+  createTable(parentEl) {
+    this.table = createElement('table', {width:'100%'}, parentEl);
+  
+    this.def.forEach((row, r) => {
+      if (r<2){
+        const rowEl = createElement('tr', {}, this.table);
+      this.inputs.push([]);
+      //console.log(this.inputs);
+      let td = createElement('td', {}, rowEl);
+      td.innerHTML = row.type;
+      }
+    });
+  
+  }
+  
+  getData(){
+    const data = [];
+               this.inputs.forEach((row) => {
+                        let res = row.reduce((acc, el) => {
+                                acc[el.dataset.input] = el.value;
+                                return acc;
+                        }, {});
+                        data.push(res);
+                });
+                //console.log(data);
+                return data;
+                }
+  transformBoolean(connected){
+      if (connected == "100 (connected)"){
+         return true;
+      } 
+      if(connected=="30 (disconnected)"){
+        return false;
+      }
+    return null ;
+  }
+  
+   disableNetworkBox(dhcpBox){
+      var i;
+      if (dhcpBox.target.id==0){
+          var restrict=document.getElementsByName('restrict0');
+      }else if(dhcpBox.target.id==1){
+          var restrict=document.getElementsByName('restrict1');
+      }
+      if (dhcpBox.target.checked==true){
+      for (i = 0; i < restrict.length; i++) {
+              restrict[i].disabled=true;
+            } 
+        i=0;
+  
+      }
+      else{
+      for (i = 0; i < restrict.length; i++) {
+          restrict[i].disabled=false;
+          }
+   
+      }
+  }
+  
+
+     updateNetworkForm(container,data)
+{
+  var table = createElement('table', {width: '100%'}, container);
+    Object.keys(data).forEach(k=>
+    {
+      if(k<2){
+        
+      NetworkForm.addNetworkLine(table, data[k],k)
+      }
+    });
+
+}
+ transformBoolean(connected)
+{
+  if (connected == "100 (connected)")
+  {
+
+    return true;
+  } 
+  if(connected=="30 (disconnected)")
+  {
+   
+    return false;
+  }
+  return null ;
+}
+ disableNetworkBox(dhcpBox){
+  var i;
+  if (dhcpBox.target.id==0){
+    
+    var restrict=document.getElementsByName('restrict0');
+  }else if(dhcpBox.target.id==1){
+    var restrict=document.getElementsByName('restrict1');
+  }
+  if (dhcpBox.target.checked==true){
+
+    for (i = 0; i < restrict.length; i++) {
+        restrict[i].disabled=true;
+      } 
+    i=0;
+ 
+  }
+  else{
+
+   for (i = 0; i < restrict.length; i++) {
+  restrict[i].disabled=false;
+    }
+   
+  }
+}
+ addNetworkLine(container,def,k){
+
+      var row = createElement('tr', {}, container);
+      var connected = createElement('td', {}, row);
+      var isConnected=networkForm.transformBoolean(def.state);
+      if(isConnected ===null ){
+        connected.innerHTML = "?" ;
+      } else if(connected.innerHTML=isConnected ?  "&check;" : "&cross;");
+
+      var typeEl = createElement('td', {padding:'10px'}, row);
+      typeEl.innerHTML = def.type;
+
+      var dhcp=createElement('td',{padding:'10px'},row);
+      dhcp.innerHTML ='DHCP';
+      
+      var dhcpBox=createElement('input',{},dhcp);
+      dhcpBox.id=k;
+      dhcpBox.type='checkbox';
+      dhcpBox.defaultChecked ='true';
+      dhcpBox.addEventListener('change',networkForm.disableNetworkBox);
+      
+      var ipEl = createElement('td',{fontWeight:'bold',},row);
+      ipEl.innerHTML='IP address:';
+     def.ip= (def.ip && def.ip.split('/'))|| '?';
+      var ipBox =createElement('input',{width:'125px'},ipEl);
+      ipBox.placeholder='IP Address';
+      ipBox.defaultValue=def.ip[0];
+      ipBox.name='restrict'+k;
+      ipBox.disabled='true';
+      ipBox.maxLength= 15;
+
+      var maskEl=createElement('td',{fontWeight:'bold',},row);
+      maskEl.innerHTML='Mask:';
+
+      var maskBox=createElement('input',{width:'125px'},maskEl);
+      maskBox.placeholder='EX:/8=255.0.0.0';
+      maskBox.defaultValue='255.255.255.0';
+      maskBox.name='restrict'+k;
+      maskBox.disabled='true';
+      maskBox.maxLength=15;
+
+      var gatewayEl=createElement('td',{fontWeight:'bold'},row);
+      gatewayEl.innerHTML ='Gateway:';
+
+      var gatewayBox=createElement('input',{width:'125px'},gatewayEl);
+      gatewayBox.placeholder='Gateway';
+      gatewayBox.defaultValue=def.gateway;
+      gatewayBox.name='restrict'+k;
+      gatewayBox.disabled='true';
+      gatewayBox.maxLength=15;
+    
+      var dnsEl1=createElement('td',{fontWeight:'bold',},row);
+      dnsEl1.innerHTML='DNS1:';
+
+      var dnsBox1=createElement('input',{width:'125px'},dnsEl1);
+      dnsBox1.placeholder='DNS1';
+      
+      dnsBox1.defaultValue=def.dns1;
+      dnsBox1.name='restrict'+k;
+      dnsBox1.disabled='true'; 
+      dnsBox1.maxLength=15;
+     
+      var dnsEl2=createElement('td',{fontWeight:'bold',},row);
+      dnsEl2.innerHTML='DNS2:';
+
+      var dnsBox2=createElement('input',{width:'125px'},dnsEl2);
+      dnsBox2.placeholder='DNS2';
+      dnsBox2.name='restrict'+k;
+      dnsBox2.disabled='true'; 
+      dnsBox2.maxLength=15;
+}
+    //createBox(parentEl,k){}
+};
+
+export default NetworkForm;*/
+
+exports.default = _default;

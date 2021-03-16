@@ -1,0 +1,25 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+class Result {
+  constructor(parentEl) {
+    this.el = (0, _util.createElement)('div', {
+      border: '1px solid gray',
+      height: '10em'
+    }, parentEl);
+  }
+
+  update(data) {
+    this.el.innerHTML = data;
+  }
+
+}
+
+var _default = Result;
+exports.default = _default;

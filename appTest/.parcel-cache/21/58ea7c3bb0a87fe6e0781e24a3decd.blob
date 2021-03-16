@@ -1,0 +1,115 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("./util");
+
+class ScreenTableForm {
+  constructor(def, parentEl) {
+    this.def = def;
+    this.inputs = [];
+    this.createTable(parentEl);
+  }
+
+  createTable(parentEl) {
+    this.table = (0, _util.createElement)('table', {
+      width: '100%'
+    }, parentEl);
+    Object.keys(this.def).forEach((obj, o) => {
+      //console.log(this.def[obj]);
+      var data = this.def[obj];
+      const rowEl = (0, _util.createElement)('tr', {}, this.table);
+      this.inputs.push([]);
+      let connected = (0, _util.createElement)('td', {}, rowEl);
+      connected.innerHTML = data.connected ? "&check;" : "&cross;";
+      this.inputs[o].push(connected);
+      let nameEl = (0, _util.createElement)('td', {}, rowEl);
+      nameEl.innerHTML = obj;
+      this.inputs[o].push(nameEl);
+      let modes = (0, _util.createElement)('td', {}, rowEl);
+      this.inputs[o].push(modes);
+      let modesSelect = (0, _util.createElement)('select', {}, modes);
+
+      if (data.modes.length == 0) {
+        modesSelect.disabled = true;
+      } else {
+        data.modes.forEach(mode => {
+          let opt = (0, _util.createElement)('option', {}, modesSelect);
+          opt.text = `${mode.width}x${mode.height}@${mode.rate}`; //modesSelect.addEventListener('change',modesSelected);
+        });
+      }
+    }); //	console.log(this.inputs);
+  }
+
+  getData() {
+    const data = []; //	console.log(this.inputs)
+
+    this.inputs.forEach(row => {
+      // console.log(row);
+      let res = row.reduce((acc, el) => {
+        console.log(el);
+        acc[el.dataset.input] = el.value;
+        return acc;
+      }, {});
+      data.push(res);
+    }); //console.log(data);
+
+    return data;
+  }
+
+}
+/*class ScreenForm{
+
+      constructor(data){
+              //const screenForm;
+
+      }
+     updateVideoForm(container, data) {
+    var table = createElement('table', {width: '100%'}, container);
+    Object.keys(data).forEach(k=>{
+      //console.log(k);
+      screenForm.addVideoLine(table, k, data[k])
+    });
+  }
+   addVideoLine(container, name, def) {
+    //console.log(name);
+    var row = createElement('tr', {}, container);
+    row.className=name; 
+    var connected = createElement('td', {}, row);
+    connected.innerHTML = def.connected ? "&check;" : "&cross;";
+    connected.className=row.className;
+    var nameEl = createElement('td', {}, row);
+    nameEl.innerHTML = name;
+    nameEl.className=name;
+    var modes = createElement('td', {}, row);
+    modes.className=row.className;
+    var modesSelect = createElement('select', {}, modes);
+    modesSelect.className=row.className;
+    if(def.modes.length == 0) {
+      modesSelect.disabled = true;
+    } 
+    else {
+      def.modes.forEach((mode) => {
+        
+        var opt = createElement('option', {}, modesSelect);
+        opt.text = `${mode.width}x${mode.height}@${mode.rate}`;
+      });
+      modesSelect.addEventListener('change', screenForm.modeSelected);
+    }
+    
+  }
+
+   modeSelected(evt) {
+   //console.log(evt.target.parentElement.parentElement);
+   var myModeChoice=document.getElementsByClassName(evt.target.classList);
+    console.log(myModeChoice);
+      return myModeChoice;
+  }
+};*/
+
+
+var _default = ScreenTableForm;
+exports.default = _default;
