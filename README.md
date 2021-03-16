@@ -14,3 +14,4 @@ yarn build
 
 to bundle your application
 # Config-App
+User can change configuration ip or resolution (remote)of his PC (LINUX GNOME) with this embedded application 
