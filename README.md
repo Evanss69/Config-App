@@ -17,3 +17,4 @@ to bundle your application
 Final intership / validation DUT in IT.
 
 Embedded web application in Javascript and NodeJS made for Deepidoo french compagny.
+This application need to be embedded in PC/mini-pc-Shuttle with Gnome-linux OS 
