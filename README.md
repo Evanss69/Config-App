@@ -20,4 +20,4 @@ Embedded web application in Javascript and NodeJS made for Deepidoo french compa
 This application need to be embedded in PC/mini-pc-Shuttle with Gnome-linux OS.
 This application will allow you to remotely configure certain parameters of the PC in which it is embedded. Such as network configuration or video output resolution. 
 
-# Read file "Saint-sorny_Evan_G6S4_Rapport_De_Stage_Deepidoo it is the intership report and it is write in French.
+# Read file "Saint-Sorny_Evan_G6S4_Rapport_De_Stage_Deepidoo it is the internship report and it is write in French.
