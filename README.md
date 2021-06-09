@@ -16,4 +16,4 @@ to bundle your application
 # Deepidoo-Config-App
 Final intership / validation DUT in IT.
 
-Embedded web application in Javascript made for Deepidoo french compagny.
+Embedded web application in Javascript and NodeJS made for Deepidoo french compagny.
